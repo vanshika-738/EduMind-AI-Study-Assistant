@@ -1,0 +1,59 @@
+name: Auto Unassign Inactive Assignees
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # Runs every day at 3 AM UTC
+  workflow_dispatch: # You can also run it manually if needed
+
+jobs:
+  unassign_inactive_users:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: read
+
+    steps:
+      - name: Unassign inactive users from issues
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100
+            });
+
+            const now = new Date();
+
+            for (const issue of issues) {
+              if (!issue.assignees.length) continue;
+
+              // Calculate days since last update
+              const updatedAt = new Date(issue.updated_at);
+              const daysInactive = Math.floor((now - updatedAt) / (1000 * 60 * 60 * 24));
+
+              if (daysInactive >= 7) {
+                const assigneeNames = issue.assignees.map(a => a.login).join(', ');
+                console.log(`🕒 Issue #${issue.number} — inactive for ${daysInactive} days. Unassigning: ${assigneeNames}`);
+
+                // Unassign all current assignees
+                await github.rest.issues.removeAssignees({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  assignees: issue.assignees.map(a => a.login)
+                });
+
+                // Leave a comment notifying them
+                const body = `⚠️ Hi ${assigneeNames}, this issue has been inactive for **${daysInactive} days**.\n\nYou’ve been automatically unassigned to keep things active.\nIf you're still working on it, feel free to reassign yourself or leave a comment to continue.`;
+
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body
+                });
+              }
+            }
