@@ -93,12 +93,25 @@ PR (Pull Request) levels determine contributor scores:
 
 ---
 
-## ⭐ GitHub Support
+<h2 align="center">🌟 Star & Fork EduMind 🌟</h2>
 
-If you like this project, please show your support!  
+<p align="center">
+  <a href="https://github.com/dimpal-yadav/edumind-ai-assistant/stargazers">
+    <img src="https://img.shields.io/github/stars/dimpal-yadav/edumind-ai-assistant?style=for-the-badge&logo=github&logoColor=white&color=ffcc00" height="45">
+  </a>
+  <a href="https://github.com/dimpal-yadav/edumind-ai-assistant/network/members">
+    <img src="https://img.shields.io/github/forks/dimpal-yadav/edumind-ai-assistant?style=for-the-badge&logo=github&logoColor=white&color=00c853" height="45">
+  </a>
+</p>
 
-[![Star on GitHub](https://img.shields.io/github/stars/dimpal-yadav/edumind-ai-assistant?style=social)](https://github.com/dimpal-yadav/edumind-ai-assistant/stargazers)
-[![Fork on GitHub](https://img.shields.io/github/forks/dimpal-yadav/edumind-ai-assistant?style=social)](https://github.com/dimpal-yadav/edumind-ai-assistant/network/members)
+<p align="center">
+  🧠 Empower learning aur support karo innovation — Star ⭐ karo is repo ko aur inspire karo dusron ko!
+</p>
+
+<p align="center">
+  👉 <a href="https://github.com/dimpal-yadav/EduMind-AI-Study-Assistant">Visit EduMind AI Study Assistant Repo</a>
+</p>
+
 
 ---
 ## 🏁 Conclusion
