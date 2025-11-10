@@ -96,22 +96,21 @@ PR (Pull Request) levels determine contributor scores:
 <h2 align="center">🌟 Star & Fork EduMind 🌟</h2>
 
 <p align="center">
-  <a href="https://github.com/dimpal-yadav/edumind-ai-assistant/stargazers">
-    <img src="https://img.shields.io/github/stars/dimpal-yadav/edumind-ai-assistant?style=for-the-badge&logo=github&logoColor=white&color=ffcc00" height="45">
+  <a href="https://github.com/dimpal-yadav/EduMind-AI-Study-Assistant/stargazers">
+    <img src="https://img.shields.io/github/stars/dimpal-yadav/EduMind-AI-Study-Assistant?style=for-the-badge&logo=github&logoColor=white&color=ffcc00" height="45">
   </a>
-  <a href="https://github.com/dimpal-yadav/edumind-ai-assistant/network/members">
-    <img src="https://img.shields.io/github/forks/dimpal-yadav/edumind-ai-assistant?style=for-the-badge&logo=github&logoColor=white&color=00c853" height="45">
+  <a href="https://github.com/dimpal-yadav/EduMind-AI-Study-Assistant/network/members">
+    <img src="https://img.shields.io/github/forks/dimpal-yadav/EduMind-AI-Study-Assistant?style=for-the-badge&logo=github&logoColor=white&color=00c853" height="45">
   </a>
 </p>
 
 <p align="center">
-  🧠 Empower learning aur support karo innovation — Star ⭐ karo is repo ko aur inspire karo dusron ko!
+  🧠 Empower learning aur support karo innovation — Star ⭐ aur Fork 🍴 karke inspire karo dusron ko!
 </p>
 
 <p align="center">
   👉 <a href="https://github.com/dimpal-yadav/EduMind-AI-Study-Assistant">Visit EduMind AI Study Assistant Repo</a>
 </p>
-
 
 ---
 ## 🏁 Conclusion
