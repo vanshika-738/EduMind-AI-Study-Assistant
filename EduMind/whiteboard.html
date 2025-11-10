@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whiteboard - EduMind</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add these in the head section -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-brain"></i>
+                <span>EduMind</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="notes.html" class="nav-link">Notes</a>
+                <a href="summary.html" class="nav-link">AI Summary</a>
+                <a href="flashcards.html" class="nav-link">Flashcards</a>
+                <a href="quiz.html" class="nav-link">Quiz</a>
+                <a href="todo.html" class="nav-link">To-Do</a>
+                <a href="timer.html" class="nav-link">Timer</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="whiteboard.html" class="nav-link active">Whiteboard</a>
+                <div class="user-menu">
+                    <img src="https://ui-avatars.com/api/?name=Student+User&background=00bcd4&color=fff" alt="User" class="user-avatar">
+                    <div class="user-dropdown">
+                        <a href="profile.html" class="dropdown-item">Profile</a>
+                        <a href="settings.html" class="dropdown-item">Settings</a>
+                        <a href="index.html" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-toggle">
+                <input type="checkbox" id="theme-switch" class="theme-checkbox">
+                <label for="theme-switch" class="theme-label">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                    <div class="theme-ball"></div>
+                </label>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Whiteboard Content -->
+    <main class="whiteboard-page">
+        <div class="container">
+            <div class="page-header animate-fade-down">
+                <h1>Digital Whiteboard</h1>
+                <p>Draw diagrams, write formulas, and visualize concepts</p>
+            </div>
+
+            <div class="whiteboard-container">
+                <!-- Whiteboard Canvas -->
+                <section class="canvas-section">
+                    <div class="whiteboard-card">
+                        <div class="card-header">
+                            <h2>Drawing Canvas</h2>
+                            <div class="canvas-actions">
+                                <button class="btn small secondary" id="clearCanvas">
+                                    <i class="fas fa-trash"></i> Clear All
+                                </button>
+                                <button class="btn small primary" id="saveCanvas">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="canvas-container">
+                                <canvas id="whiteboardCanvas"></canvas>
+                                <div class="canvas-overlay" id="canvasOverlay">
+                                    <i class="fas fa-mouse-pointer"></i>
+                                    <p>Start drawing on the canvas</p>
+                                    <small>Use the tools on the right to draw, erase, and add shapes</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Toolbar Sidebar -->
+                <aside class="toolbar-sidebar">
+                    <div class="toolbar-card">
+                        <!-- Tools Section -->
+                        <div class="toolbar-section">
+                            <h3><i class="fas fa-pencil-alt"></i> Drawing Tools</h3>
+                            <div class="tool-grid">
+                                <button class="tool-btn active" data-tool="pen" title="Pen Tool">
+                                    <i class="fas fa-pen"></i>
+                                    <span>Pen</span>
+                                </button>
+                                <button class="tool-btn" data-tool="eraser" title="Eraser">
+                                    <i class="fas fa-eraser"></i>
+                                    <span>Eraser</span>
+                                </button>
+                                <button class="tool-btn" data-tool="line" title="Line Tool">
+                                    <i class="fas fa-minus"></i>
+                                    <span>Line</span>
+                                </button>
+                                <button class="tool-btn" data-tool="rectangle" title="Rectangle">
+                                    <i class="fas fa-square"></i>
+                                    <span>Rectangle</span>
+                                </button>
+                                <button class="tool-btn" data-tool="circle" title="Circle">
+                                    <i class="fas fa-circle"></i>
+                                    <span>Circle</span>
+                                </button>
+                                <button class="tool-btn" data-tool="text" title="Text Tool">
+                                    <i class="fas fa-font"></i>
+                                    <span>Text</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Colors Section -->
+                        <div class="toolbar-section">
+                            <h3><i class="fas fa-palette"></i> Colors</h3>
+                            <div class="color-grid">
+                                <button class="color-btn active" data-color="#000000" style="background: #000000;" title="Black"></button>
+                                <button class="color-btn" data-color="#ff0000" style="background: #ff0000;" title="Red"></button>
+                                <button class="color-btn" data-color="#0000ff" style="background: #0000ff;" title="Blue"></button>
+                                <button class="color-btn" data-color="#008000" style="background: #008000;" title="Green"></button>
+                                <button class="color-btn" data-color="#ffa500" style="background: #ffa500;" title="Orange"></button>
+                                <button class="color-btn" data-color="#800080" style="background: #800080;" title="Purple"></button>
+                                <button class="color-btn" data-color="#00bcd4" style="background: #00bcd4;" title="Cyan"></button>
+                                <button class="color-btn" data-color="#9c27b0" style="background: #9c27b0;" title="Magenta"></button>
+                            </div>
+                            <div class="color-picker">
+                                <label for="customColor">Custom Color:</label>
+                                <input type="color" id="customColor" value="#000000">
+                            </div>
+                        </div>
+
+                        <!-- Brush Size -->
+                        <div class="toolbar-section">
+                            <h3><i class="fas fa-brush"></i> Brush Size</h3>
+                            <div class="brush-controls">
+                                <input type="range" id="brushSize" min="1" max="50" value="5">
+                                <div class="brush-info">
+                                    <span id="brushSizeValue">5px</span>
+                                    <div class="brush-preview">
+                                        <div class="brush-sample" id="brushSample"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Templates -->
+                        <div class="toolbar-section">
+                            <h3><i class="fas fa-shapes"></i> Templates</h3>
+                            <div class="template-grid">
+                                <button class="template-btn" data-template="formula">
+                                    <i class="fas fa-square-root-alt"></i>
+                                    <span>Math Formula</span>
+                                </button>
+                                <button class="template-btn" data-template="diagram">
+                                    <i class="fas fa-project-diagram"></i>
+                                    <span>Flow Diagram</span>
+                                </button>
+                                <button class="template-btn" data-template="mindmap">
+                                    <i class="fas fa-sitemap"></i>
+                                    <span>Mind Map</span>
+                                </button>
+                                <button class="template-btn" data-template="grid">
+                                    <i class="fas fa-th"></i>
+                                    <span>Grid Lines</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="toolbar-section">
+                            <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                            <div class="action-grid">
+                                <button class="action-btn" id="undoBtn" title="Undo">
+                                    <i class="fas fa-undo"></i>
+                                    <span>Undo</span>
+                                </button>
+                                <button class="action-btn" id="redoBtn" title="Redo">
+                                    <i class="fas fa-redo"></i>
+                                    <span>Redo</span>
+                                </button>
+                                <button class="action-btn" id="downloadBtn" title="Download">
+                                    <i class="fas fa-download"></i>
+                                    <span>Download</span>
+                                </button>
+                                <button class="action-btn" id="newBoardBtn" title="New Whiteboard">
+                                    <i class="fas fa-file"></i>
+                                    <span>New</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Saved Whiteboards -->
+                    <div class="saved-whiteboards">
+                        <div class="saved-header">
+                            <h3><i class="fas fa-history"></i> Saved Whiteboards</h3>
+                            <button class="btn small primary" id="refreshSaved">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <div class="saved-list" id="savedList">
+                            <!-- Saved whiteboards will appear here -->
+                            <div class="saved-item">
+                                <div class="saved-thumbnail">
+                                    <div class="thumbnail-placeholder">
+                                        <i class="fas fa-paint-brush"></i>
+                                    </div>
+                                </div>
+                                <div class="saved-info">
+                                    <h4>Math Formulas</h4>
+                                    <span class="saved-date">Today, 14:30</span>
+                                </div>
+                                <div class="saved-actions">
+                                    <button class="btn-icon load-btn" title="Load">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <button class="btn-icon delete-btn" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="saved-item">
+                                <div class="saved-thumbnail">
+                                    <div class="thumbnail-placeholder">
+                                        <i class="fas fa-project-diagram"></i>
+                                    </div>
+                                </div>
+                                <div class="saved-info">
+                                    <h4>Biology Diagram</h4>
+                                    <span class="saved-date">Yesterday</span>
+                                </div>
+                                <div class="saved-actions">
+                                    <button class="btn-icon load-btn" title="Load">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <button class="btn-icon delete-btn" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="empty-state" id="emptySaved">
+                            <i class="fas fa-paint-brush"></i>
+                            <p>No saved whiteboards yet</p>
+                            <small>Create and save your first whiteboard</small>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <!-- Save Whiteboard Modal -->
+    <div class="modal" id="saveModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Save Whiteboard</h3>
+                <button class="close-btn" id="closeSaveModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="saveWhiteboardForm">
+                    <div class="form-group">
+                        <label for="whiteboardName">Whiteboard Name</label>
+                        <input type="text" id="whiteboardName" placeholder="Enter a name for your whiteboard" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="whiteboardDescription">Description (Optional)</label>
+                        <textarea id="whiteboardDescription" placeholder="Add a description..." rows="3"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn secondary" id="cancelSave">Cancel</button>
+                        <button type="submit" class="btn primary">Save Whiteboard</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="whiteboard.js"></script>
+</body>
+</html>

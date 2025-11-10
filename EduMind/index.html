@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduMind - AI Study Assistant | Study Smart, Not Hard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add these in the head section -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-brain"></i>
+                <span>EduMind</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+                <a href="login.html" class="nav-link nav-btn">Login</a>
+                <a href="signup.html" class="nav-link nav-btn primary">Sign Up</a>
+            </div>
+            <div class="theme-toggle">
+                <input type="checkbox" id="theme-switch" class="theme-checkbox">
+                <label for="theme-switch" class="theme-label">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                    <div class="theme-ball"></div>
+                </label>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title animate-fade-down">Study Smart, Not Hard</h1>
+                <p class="hero-subtitle animate-fade-up">EduMind helps you learn faster with AI-powered tools for summarizing, flashcards, quizzes, and more.</p>
+                <div class="hero-buttons animate-fade-up">
+                    <a href="signup.html" class="btn primary">Get Started Free</a>
+                    <a href="#features" class="btn secondary">Explore Features</a>
+                </div>
+            </div>
+            <div class="hero-image animate-zoom-in">
+                <div class="floating-card card-1">
+                    <i class="fas fa-book"></i>
+                    <span>Smart Notes</span>
+                </div>
+                <div class="floating-card card-2">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>AI Summary</span>
+                </div>
+                <div class="floating-card card-3">
+                    <i class="fas fa-tasks"></i>
+                    <span>Task Manager</span>
+                </div>
+                <div class="floating-card card-4">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Progress Tracking</span>
+                </div>
+                <div class="dashboard-preview">
+                    <div class="preview-header">
+                        <div class="preview-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="preview-content">
+                        <div class="preview-chart"></div>
+                        <div class="preview-stats">
+                            <div class="stat">
+                                <span class="stat-value">87%</span>
+                                <span class="stat-label">Progress</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">24</span>
+                                <span class="stat-label">Sessions</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <span>Scroll Down</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title animate-fade-down">Powerful Study Tools</h2>
+            <p class="section-subtitle animate-fade-up">Everything you need to study effectively in one place</p>
+            
+            <div class="features-grid">
+                <div class="feature-card animate-zoom-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-upload"></i>
+                    </div>
+                    <h3>Notes Upload</h3>
+                    <p>Upload PDFs and images, save URLs, and organize all your study materials in one place.</p>
+                </div>
+                
+                <div class="feature-card animate-zoom-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI Summarizer</h3>
+                    <p>Generate concise summaries of your notes using advanced AI to save time and focus on key concepts.</p>
+                </div>
+                
+                <div class="feature-card animate-zoom-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h3>Flashcards</h3>
+                    <p>Create interactive flashcards from your summaries with flip animations for effective memorization.</p>
+                </div>
+                
+                <div class="feature-card animate-zoom-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h3>Quiz Generator</h3>
+                    <p>Automatically generate quizzes from your notes to test your knowledge and track your progress.</p>
+                </div>
+                
+                <div class="feature-card animate-zoom-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h3>Task Manager</h3>
+                    <p>Organize your study schedule with a smart to-do list and track your completion progress.</p>
+                </div>
+                
+                <div class="feature-card animate-zoom-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <h3>Pomodoro Timer</h3>
+                    <p>Boost productivity with a focus timer that uses the proven Pomodoro technique.</p>
+                </div>
+                
+                <div class="feature-card animate-zoom-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h3>Study History</h3>
+                    <p>Review your past study sessions, summaries, quizzes, and track your learning journey.</p>
+                </div>
+                
+                <div class="feature-card animate-zoom-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>AI Doubt Solver</h3>
+                    <p>Get instant answers to your study questions with our integrated AI chatbot.</p>
+                </div>
+                
+                <div class="feature-card animate-zoom-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-paint-brush"></i>
+                    </div>
+                    <h3>Whiteboard</h3>
+                    <p>Draw diagrams, formulas, and mind maps with our interactive digital whiteboard.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text animate-slide-left">
+                    <h2 class="section-title">About EduMind</h2>
+                    <p>EduMind was created to help students study more effectively using the power of artificial intelligence. Our platform combines proven study techniques with cutting-edge technology to help you learn faster and retain more information.</p>
+                    <p>Whether you're preparing for exams, learning a new subject, or just trying to stay organized, EduMind provides all the tools you need in one seamless experience.</p>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <span class="stat-number">10K+</span>
+                            <span class="stat-label">Students</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">50K+</span>
+                            <span class="stat-label">Study Sessions</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">95%</span>
+                            <span class="stat-label">Satisfaction</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image animate-slide-right">
+                    <div class="image-container">
+                        <div class="floating-element el-1"></div>
+                        <div class="floating-element el-2"></div>
+                        <div class="floating-element el-3"></div>
+                        <div class="main-image">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title animate-fade-down">Get In Touch</h2>
+            <p class="section-subtitle animate-fade-up">Have questions? We'd love to hear from you</p>
+            
+            <div class="contact-content">
+                <div class="contact-info animate-slide-left">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Email</h3>
+                            <p>support@edumind.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Phone</h3>
+                            <p>+1 (555) 123-4567</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Address</h3>
+                            <p>123 Education Street, Learning City, LC 12345</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="contact-form animate-slide-right">
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <input type="text" id="name" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" placeholder="Your Message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn primary">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-brain"></i>
+                        <span>EduMind</span>
+                    </div>
+                    <p>Study Smart, Not Hard with our AI-powered study assistant.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Support</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Legal</h3>
+                    <ul>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 EduMind. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+</body>
+</html>

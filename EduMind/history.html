@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study History - EduMind</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-brain"></i>
+                <span>EduMind</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="notes.html" class="nav-link">Notes</a>
+                <a href="summary.html" class="nav-link">AI Summary</a>
+                <a href="flashcards.html" class="nav-link">Flashcards</a>
+                <a href="quiz.html" class="nav-link">Quiz</a>
+                <a href="todo.html" class="nav-link">To-Do</a>
+                <a href="timer.html" class="nav-link">Timer</a>
+                <a href="history.html" class="nav-link active">History</a>
+                <a href="whiteboard.html" class="nav-link">Whiteboard</a>
+                <div class="user-menu">
+                    <img id="userAvatar" src="https://ui-avatars.com/api/?name=Student+User&background=00bcd4&color=fff" alt="User" class="user-avatar">
+                    <div class="user-dropdown">
+                        <a href="profile.html" class="dropdown-item">Profile</a>
+                        <a href="settings.html" class="dropdown-item">Settings</a>
+                        <a href="index.html" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-toggle">
+                <input type="checkbox" id="theme-switch" class="theme-checkbox">
+                <label for="theme-switch" class="theme-label">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                    <div class="theme-ball"></div>
+                </label>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- History Content -->
+    <main class="history-page">
+        <div class="container">
+            <div class="page-header animate-fade-down">
+                <h1>Study History</h1>
+                <p>Track your learning journey and monitor your progress</p>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="loading-spinner">
+                <div class="spinner"></div>
+            </div>
+
+            <!-- Statistics Overview -->
+            <section class="stats-overview animate-fade-up">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Study Time</h3>
+                            <span class="stat-value" id="totalStudyTime">0h 0m</span>
+                            <span class="stat-change" id="studyTimeChange">Start studying to see progress</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Notes Created</h3>
+                            <span class="stat-value" id="totalNotes">0</span>
+                            <span class="stat-change" id="notesChange">No notes yet</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>AI Summaries</h3>
+                            <span class="stat-value" id="totalSummaries">0</span>
+                            <span class="stat-change" id="summariesChange">No summaries yet</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Quizzes Completed</h3>
+                            <span class="stat-value" id="totalQuizzes">0</span>
+                            <span class="stat-change" id="quizzesChange">No quizzes yet</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="history-container">
+                <!-- Charts Section -->
+                <section class="charts-section animate-slide-left">
+                    <div class="charts-card">
+                        <div class="card-header">
+                            <h2>Study Analytics</h2>
+                            <div class="chart-controls">
+                                <select id="chartPeriod">
+                                    <option value="week">Last Week</option>
+                                    <option value="month" selected>Last Month</option>
+                                    <option value="quarter">Last 3 Months</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div id="noDataCharts" class="empty-state">
+                                <i class="fas fa-chart-bar"></i>
+                                <h3>No Data Yet</h3>
+                                <p>Start studying to see your analytics here</p>
+                            </div>
+                            <div class="charts-grid" id="chartsGrid" style="display: none;">
+                                <div class="chart-container">
+                                    <h3>Study Time Distribution</h3>
+                                    <canvas id="timeDistributionChart"></canvas>
+                                </div>
+                                <div class="chart-container">
+                                    <h3>Weekly Progress</h3>
+                                    <canvas id="weeklyProgressChart"></canvas>
+                                </div>
+                                <div class="chart-container">
+                                    <h3>Subject Breakdown</h3>
+                                    <canvas id="subjectChart"></canvas>
+                                </div>
+                                <div class="chart-container">
+                                    <h3>Quiz Performance</h3>
+                                    <canvas id="performanceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Activity Timeline -->
+                <section class="timeline-section animate-slide-right">
+                    <div class="timeline-card">
+                        <div class="card-header">
+                            <h2>Recent Activity</h2>
+                            <div class="filter-options">
+                                <select id="activityFilter">
+                                    <option value="all">All Activities</option>
+                                    <option value="notes">Notes</option>
+                                    <option value="summaries">Summaries</option>
+                                    <option value="flashcards">Flashcards</option>
+                                    <option value="quizzes">Quizzes</option>
+                                    <option value="timer">Focus Sessions</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="timeline" id="activityTimeline">
+                                <!-- Timeline items will be dynamically added -->
+                            </div>
+                            <div class="empty-state" id="emptyTimeline">
+                                <i class="fas fa-history"></i>
+                                <h3>No Activity Yet</h3>
+                                <p>Start using EduMind to see your activity here</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Study Sessions -->
+                <section class="sessions-section animate-fade-up">
+                    <div class="sessions-card">
+                        <div class="card-header">
+                            <h2>Study Sessions</h2>
+                            <button class="btn small secondary" id="exportSessions">
+                                <i class="fas fa-download"></i> Export Data
+                            </button>
+                        </div>
+                        <div class="card-content">
+                            <div id="noSessionsData" class="empty-state">
+                                <i class="fas fa-clock"></i>
+                                <h3>No Study Sessions</h3>
+                                <p>Complete your first study session to see data here</p>
+                            </div>
+                            <div class="sessions-table-container" id="sessionsTableContainer" style="display: none;">
+                                <table class="sessions-table" id="sessionsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Duration</th>
+                                            <th>Subject</th>
+                                            <th>Activity</th>
+                                            <th>Details</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sessionsTableBody">
+                                        <!-- Sessions will be dynamically added -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="table-footer" id="tableFooter" style="display: none;">
+                                <div class="pagination">
+                                    <button class="pagination-btn" id="prevPage" disabled>Previous</button>
+                                    <span class="pagination-info" id="paginationInfo">Page 1 of 1</span>
+                                    <button class="pagination-btn" id="nextPage" disabled>Next</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Achievements -->
+                <section class="achievements-section animate-zoom-in">
+                    <div class="achievements-card">
+                        <div class="card-header">
+                            <h2>Study Achievements</h2>
+                            <span class="achievements-count" id="achievementsCount">0/12 Unlocked</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="achievements-grid" id="achievementsGrid">
+                                <!-- Achievements will be dynamically loaded -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Session Details Modal -->
+    <div class="modal" id="sessionDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Session Details</h3>
+                <button class="close-btn" id="closeDetailsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="session-details" id="sessionDetailsContent">
+                    <!-- Session details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBCyRrvdQJBpPjZG3aGaTZfMXXoISzNsTg",
+            authDomain: "edumind-ai-assistant-6e071.firebaseapp.com",
+            projectId: "edumind-ai-assistant-6e071",
+            storageBucket: "edumind-ai-assistant-6e071.firebasestorage.app",
+            messagingSenderId: "307173146203",
+            appId: "1:307173146203:web:1456f23755bc5d2a11497e",
+            measurementId: "G-T16NPJFS4P"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+    <script src="auth.js"></script>
+    <script src="history.js"></script>
+</body>
+</html>

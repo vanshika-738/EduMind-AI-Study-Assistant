@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EduMind</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-brain"></i>
+                <span>EduMind</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="notes.html" class="nav-link">Notes</a>
+                <a href="summary.html" class="nav-link">AI Summary</a>
+                <a href="flashcards.html" class="nav-link">Flashcards</a>
+                <a href="quiz.html" class="nav-link">Quiz</a>
+                <a href="todo.html" class="nav-link">To-Do</a>
+                <a href="timer.html" class="nav-link">Timer</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="whiteboard.html" class="nav-link">Whiteboard</a>
+                <div class="user-menu">
+                    <img id="userAvatar" src="https://ui-avatars.com/api/?name=Student+User&background=00bcd4&color=fff" alt="User" class="user-avatar">
+                    <div class="user-dropdown">
+                        <a href="profile.html" class="dropdown-item">Profile</a>
+                        <a href="settings.html" class="dropdown-item">Settings</a>
+                        <a href="#" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-toggle">
+                <input type="checkbox" id="theme-switch" class="theme-checkbox">
+                <label for="theme-switch" class="theme-label">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                    <div class="theme-ball"></div>
+                </label>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <main class="dashboard">
+        <div class="container">
+            <!-- Welcome Section -->
+            <section class="welcome-section animate-fade-down">
+                <div class="welcome-content">
+                    <h1>Welcome back, <span id="userName">Student</span>!</h1>
+                    <p>Ready to continue your learning journey?</p>
+                </div>
+                <div class="date-display">
+                    <span id="currentDate">Loading...</span>
+                </div>
+            </section>
+
+            <!-- Quick Stats -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card animate-zoom-in">
+                        <div class="stat-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Study Sessions</h3>
+                            <span class="stat-value" id="totalSessions">0</span>
+                            <span class="stat-change" id="sessionsChange">Start studying!</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card animate-zoom-in">
+                        <div class="stat-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Tasks Completed</h3>
+                            <span class="stat-value" id="completedTasks">0/0</span>
+                            <span class="stat-change" id="tasksChange">Add some tasks!</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card animate-zoom-in">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Average Score</h3>
+                            <span class="stat-value" id="avgScore">0%</span>
+                            <span class="stat-change" id="scoreChange">Take a quiz!</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card animate-zoom-in">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Focus Time</h3>
+                            <span class="stat-value" id="focusTime">0h 0m</span>
+                            <span class="stat-change" id="timeChange">Use timer!</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Content Grid -->
+            <section class="dashboard-grid">
+                <!-- Progress Chart -->
+                <div class="dashboard-card progress-card animate-slide-left">
+                    <div class="card-header">
+                        <h2>Study Progress</h2>
+                        <a href="history.html" class="card-link">View Details</a>
+                    </div>
+                    <div class="card-content">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-card actions-card animate-slide-right">
+                    <div class="card-header">
+                        <h2>Quick Actions</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="actions-grid">
+                            <a href="notes.html" class="action-item">
+                                <div class="action-icon">
+                                    <i class="fas fa-file-upload"></i>
+                                </div>
+                                <span>Upload Notes</span>
+                            </a>
+                            
+                            <a href="summary.html" class="action-item">
+                                <div class="action-icon">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <span>AI Summary</span>
+                            </a>
+                            
+                            <a href="flashcards.html" class="action-item">
+                                <div class="action-icon">
+                                    <i class="fas fa-layer-group"></i>
+                                </div>
+                                <span>Flashcards</span>
+                            </a>
+                            
+                            <a href="quiz.html" class="action-item">
+                                <div class="action-icon">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                                <span>Take Quiz</span>
+                            </a>
+                            
+                            <a href="todo.html" class="action-item">
+                                <div class="action-icon">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <span>To-Do List</span>
+                            </a>
+                            
+                            <a href="timer.html" class="action-item">
+                                <div class="action-icon">
+                                    <i class="fas fa-hourglass-half"></i>
+                                </div>
+                                <span>Focus Timer</span>
+                            </a>
+                            
+                            <a href="whiteboard.html" class="action-item">
+                                <div class="action-icon">
+                                    <i class="fas fa-paint-brush"></i>
+                                </div>
+                                <span>Whiteboard</span>
+                            </a>
+                            
+                            <a href="history.html" class="action-item">
+                                <div class="action-icon">
+                                    <i class="fas fa-history"></i>
+                                </div>
+                                <span>Study History</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="dashboard-card activity-card animate-slide-left">
+                    <div class="card-header">
+                        <h2>Recent Activity</h2>
+                        <a href="history.html" class="card-link">View All</a>
+                    </div>
+                    <div class="card-content">
+                        <div class="activity-list" id="recentActivity">
+                            <div class="activity-item">
+                                <div class="activity-icon info">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div class="activity-details">
+                                    <p>Welcome to EduMind! Start your learning journey.</p>
+                                    <span class="activity-time">Just now</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Tasks -->
+                <div class="dashboard-card tasks-card animate-slide-right">
+                    <div class="card-header">
+                        <h2>Upcoming Tasks</h2>
+                        <a href="todo.html" class="card-link">View All</a>
+                    </div>
+                    <div class="card-content">
+                        <div class="tasks-list" id="upcomingTasks">
+                            <div class="task-item empty-task">
+                                <div class="task-details">
+                                    <p>No upcoming tasks. Add some tasks to get started!</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tasks-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="tasksProgress" style="width: 0%"></div>
+                            </div>
+                            <span id="tasksProgressText">0% completed</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Chat Widget -->
+            <section class="chat-widget animate-fade-up">
+                <div class="chat-header">
+                    <h2><i class="fas fa-robot"></i> AI Study Assistant</h2>
+                    <button class="chat-toggle">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="chat-content">
+                    <div class="chat-messages">
+                        <div class="message ai-message">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <p>Hello! I'm your AI study assistant. How can I help you with your studies today?</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" placeholder="Ask me anything about your studies...">
+                        <button class="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="auth.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

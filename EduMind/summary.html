@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Summary - EduMind</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add these in the head section -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-brain"></i>
+                <span>EduMind</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="notes.html" class="nav-link">Notes</a>
+                <a href="summary.html" class="nav-link active">AI Summary</a>
+                <a href="flashcards.html" class="nav-link">Flashcards</a>
+                <a href="quiz.html" class="nav-link">Quiz</a>
+                <a href="todo.html" class="nav-link">To-Do</a>
+                <a href="timer.html" class="nav-link">Timer</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="whiteboard.html" class="nav-link">Whiteboard</a>
+                <div class="user-menu">
+                    <img src="https://ui-avatars.com/api/?name=Student+User&background=00bcd4&color=fff" alt="User" class="user-avatar">
+                    <div class="user-dropdown">
+                        <a href="profile.html" class="dropdown-item">Profile</a>
+                        <a href="settings.html" class="dropdown-item">Settings</a>
+                        <a href="index.html" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-toggle">
+                <input type="checkbox" id="theme-switch" class="theme-checkbox">
+                <label for="theme-switch" class="theme-label">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                    <div class="theme-ball"></div>
+                </label>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- AI Summary Content -->
+    <main class="summary-page">
+        <div class="container">
+            <div class="page-header animate-fade-down">
+                <h1>AI Summarizer</h1>
+                <p>Transform your notes into concise summaries using artificial intelligence</p>
+            </div>
+
+            <div class="summary-container">
+                <!-- Input Section -->
+                <section class="input-section animate-slide-left">
+                    <div class="input-card">
+                        <div class="card-header">
+                            <h2>Input Your Notes</h2>
+                            <div class="input-options">
+                                <button class="option-btn active" data-option="text">
+                                    <i class="fas fa-font"></i> Text
+                                </button>
+                                <button class="option-btn" data-option="file">
+                                    <i class="fas fa-file-upload"></i> File
+                                </button>
+                                <button class="option-btn" data-option="url">
+                                    <i class="fas fa-link"></i> URL
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card-content">
+                            <!-- Text Input -->
+                            <div class="input-content active" id="text-input">
+                                <textarea id="notesText" placeholder="Paste or type your notes here... (Minimum 100 words for best results)" rows="12"></textarea>
+                                <div class="input-footer">
+                                    <div class="word-count">
+                                        <span id="wordCount">0</span> words
+                                    </div>
+                                    <button class="btn primary" id="generateSummary">
+                                        <i class="fas fa-robot"></i> Generate Summary
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- File Input -->
+                            <div class="input-content" id="file-input">
+                                <div class="file-upload-area">
+                                    <i class="fas fa-file-upload"></i>
+                                    <h3>Upload Document</h3>
+                                    <p>Supported: PDF, DOCX, TXT</p>
+                                    <input type="file" id="documentFile" accept=".pdf,.docx,.txt" style="display: none;">
+                                    <button class="btn secondary" id="browseDocument">Browse Files</button>
+                                </div>
+                                <div class="selected-file" id="selectedFile" style="display: none;">
+                                    <i class="fas fa-file"></i>
+                                    <span id="fileName">document.pdf</span>
+                                    <button class="btn small" id="removeFile">Remove</button>
+                                </div>
+                            </div>
+                            
+                            <!-- URL Input -->
+                            <div class="input-content" id="url-input">
+                                <div class="url-input-area">
+                                    <input type="url" id="articleUrl" placeholder="Enter article URL...">
+                                    <button class="btn primary" id="fetchArticle">
+                                        <i class="fas fa-download"></i> Fetch Content
+                                    </button>
+                                </div>
+                                <div class="url-preview" id="urlPreview" style="display: none;">
+                                    <h4>Preview</h4>
+                                    <div class="preview-content" id="previewContent"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Output Section -->
+                <section class="output-section animate-slide-right">
+                    <div class="output-card">
+                        <div class="card-header">
+                            <h2>AI Summary</h2>
+                            <div class="summary-actions">
+                                <button class="action-btn" id="copySummary" title="Copy">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="action-btn" id="downloadSummary" title="Download">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="action-btn" id="saveSummary" title="Save">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card-content">
+                            <div class="summary-placeholder" id="summaryPlaceholder">
+                                <i class="fas fa-robot"></i>
+                                <h3>Your Summary Will Appear Here</h3>
+                                <p>Enter your notes and click "Generate Summary" to get started</p>
+                            </div>
+                            
+                            <div class="summary-content" id="summaryContent" style="display: none;">
+                                <div class="summary-header">
+                                    <div class="summary-stats">
+                                        <div class="stat">
+                                            <span class="stat-value" id="originalLength">0</span>
+                                            <span class="stat-label">Original Words</span>
+                                        </div>
+                                        <div class="stat">
+                                            <span class="stat-value" id="summaryLength">0</span>
+                                            <span class="stat-label">Summary Words</span>
+                                        </div>
+                                        <div class="stat">
+                                            <span class="stat-value" id="reductionPercent">0%</span>
+                                            <span class="stat-label">Reduction</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="summary-text" id="summaryText">
+                                    <!-- Summary content will be inserted here -->
+                                </div>
+                                
+                                <div class="summary-footer">
+                                    <div class="summary-tags" id="summaryTags">
+                                        <!-- Tags will be inserted here -->
+                                    </div>
+                                    <div class="summary-actions-full">
+                                        <button class="btn secondary" id="regenerateSummary">
+                                            <i class="fas fa-sync"></i> Regenerate
+                                        </button>
+                                        <button class="btn primary" id="createFlashcards">
+                                            <i class="fas fa-layer-group"></i> Create Flashcards
+                                        </button>
+                                        <button class="btn primary" id="createQuiz">
+                                            <i class="fas fa-question-circle"></i> Generate Quiz
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-loading" id="summaryLoading" style="display: none;">
+                                <div class="loading-spinner"></div>
+                                <h3>AI is summarizing your content...</h3>
+                                <p>This may take a few seconds</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Recent Summaries -->
+            <section class="recent-summaries">
+                <div class="section-header animate-fade-up">
+                    <h2>Recent Summaries</h2>
+                    <a href="history.html" class="card-link">View All</a>
+                </div>
+                
+                <div class="summaries-grid" id="summariesGrid">
+                    <!-- Recent summaries will be dynamically added -->
+                    <div class="summary-item animate-zoom-in">
+                        <div class="summary-item-header">
+                            <h3>Biology - Cell Structure</h3>
+                            <span class="summary-date">2 days ago</span>
+                        </div>
+                        <div class="summary-item-content">
+                            <p>Cells are the basic unit of life. Eukaryotic cells have membrane-bound organelles while prokaryotic cells do not. Key organelles include nucleus, mitochondria, and ribosomes...</p>
+                        </div>
+                        <div class="summary-item-footer">
+                            <div class="summary-stats">
+                                <span>Original: 450 words</span>
+                                <span>Summary: 120 words</span>
+                            </div>
+                            <button class="btn small">View</button>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-item animate-zoom-in">
+                        <div class="summary-item-header">
+                            <h3>World War II Timeline</h3>
+                            <span class="summary-date">1 week ago</span>
+                        </div>
+                        <div class="summary-item-content">
+                            <p>WWII lasted from 1939 to 1945. Major events include invasion of Poland, Pearl Harbor, D-Day, and atomic bombings. Ended with Allied victory and establishment of UN...</p>
+                        </div>
+                        <div class="summary-item-footer">
+                            <div class="summary-stats">
+                                <span>Original: 680 words</span>
+                                <span>Summary: 150 words</span>
+                            </div>
+                            <button class="btn small">View</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="empty-state" id="emptySummaries" style="display: none;">
+                    <i class="fas fa-robot"></i>
+                    <h3>No Summaries Yet</h3>
+                    <p>Generate your first AI summary to see it here</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="auth.js"></script>
+    <script src="summary.js"></script>
+</body>
+</html>

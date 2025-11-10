@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - EduMind</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Add these in the head section -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-brain"></i>
+                <span>EduMind</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="notes.html" class="nav-link">Notes</a>
+                <a href="summary.html" class="nav-link">AI Summary</a>
+                <a href="flashcards.html" class="nav-link">Flashcards</a>
+                <a href="quiz.html" class="nav-link active">Quiz</a>
+                <a href="todo.html" class="nav-link">To-Do</a>
+                <a href="timer.html" class="nav-link">Timer</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="whiteboard.html" class="nav-link">Whiteboard</a>
+                <div class="user-menu">
+                    <img src="https://ui-avatars.com/api/?name=Student+User&background=00bcd4&color=fff" alt="User" class="user-avatar">
+                    <div class="user-dropdown">
+                        <a href="profile.html" class="dropdown-item">Profile</a>
+                        <a href="settings.html" class="dropdown-item">Settings</a>
+                        <a href="index.html" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-toggle">
+                <input type="checkbox" id="theme-switch" class="theme-checkbox">
+                <label for="theme-switch" class="theme-label">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                    <div class="theme-ball"></div>
+                </label>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Quiz Content -->
+    <main class="quiz-page">
+        <div class="container">
+            <div class="page-header animate-fade-down">
+                <h1>AI Quiz Generator</h1>
+                <p>Test your knowledge with automatically generated quizzes</p>
+            </div>
+
+            <div class="quiz-container">
+                <!-- Quiz Generator -->
+                <section class="generator-section animate-slide-left">
+                    <div class="generator-card">
+                        <div class="card-header">
+                            <h2>Create New Quiz</h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="quiz-source">
+                                <h3>Quiz Source</h3>
+                                <div class="source-options">
+                                    <div class="source-option active" data-source="notes">
+                                        <i class="fas fa-file-alt"></i>
+                                        <span>From Notes</span>
+                                    </div>
+                                    <div class="source-option" data-source="summary">
+                                        <i class="fas fa-robot"></i>
+                                        <span>From Summary</span>
+                                    </div>
+                                    <div class="source-option" data-source="topic">
+                                        <i class="fas fa-keyboard"></i>
+                                        <span>Enter Topic</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="source-content active" id="notes-source">
+                                <div class="notes-selection">
+                                    <h4>Select Notes</h4>
+                                    <div class="notes-list">
+                                        <div class="note-item selected">
+                                            <i class="fas fa-file-pdf"></i>
+                                            <span>Biology Chapter 5</span>
+                                        </div>
+                                        <div class="note-item">
+                                            <i class="fas fa-link"></i>
+                                            <span>Chemistry Formulas</span>
+                                        </div>
+                                        <div class="note-item">
+                                            <i class="fas fa-font"></i>
+                                            <span>History Notes</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="source-content" id="summary-source">
+                                <div class="summary-selection">
+                                    <h4>Select Summary</h4>
+                                    <div class="summary-list">
+                                        <div class="summary-item selected">
+                                            <h5>Cell Structure Summary</h5>
+                                            <span>120 words from 450 original</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <h5>WWII Timeline Summary</h5>
+                                            <span>150 words from 680 original</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="source-content" id="topic-source">
+                                <div class="topic-input">
+                                    <h4>Enter Topic</h4>
+                                    <input type="text" id="quizTopic" placeholder="e.g., Photosynthesis, World War II, Calculus...">
+                                </div>
+                            </div>
+
+                            <div class="quiz-settings">
+                                <h3>Quiz Settings</h3>
+                                <div class="settings-grid">
+                                    <div class="setting">
+                                        <label for="questionCount">Number of Questions</label>
+                                        <input type="range" id="questionCount" min="5" max="20" value="10">
+                                        <span id="questionCountValue">10</span>
+                                    </div>
+                                    <div class="setting">
+                                        <label for="quizDifficulty">Difficulty</label>
+                                        <select id="quizDifficulty">
+                                            <option value="easy">Easy</option>
+                                            <option value="medium" selected>Medium</option>
+                                            <option value="hard">Hard</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting">
+                                        <label for="questionType">Question Type</label>
+                                        <select id="questionType">
+                                            <option value="mixed" selected>Mixed</option>
+                                            <option value="mcq">Multiple Choice</option>
+                                            <option value="truefalse">True/False</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting">
+                                        <label for="timeLimit">Time Limit (minutes)</label>
+                                        <select id="timeLimit">
+                                            <option value="0">No limit</option>
+                                            <option value="5">5 minutes</option>
+                                            <option value="10" selected>10 minutes</option>
+                                            <option value="15">15 minutes</option>
+                                            <option value="20">20 minutes</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn primary generate-quiz-btn" id="generateQuiz">
+                                <i class="fas fa-magic"></i> Generate Quiz
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Active Quiz -->
+                <section class="quiz-section animate-slide-right">
+                    <div class="quiz-card">
+                        <div class="card-header">
+                            <h2 id="quizTitle">Current Quiz</h2>
+                            <div class="quiz-timer" id="quizTimer">
+                                <i class="fas fa-clock"></i>
+                                <span id="timeRemaining">10:00</span>
+                            </div>
+                        </div>
+
+                        <div class="card-content">
+                            <!-- Quiz Instructions -->
+                            <div class="quiz-instructions" id="quizInstructions">
+                                <div class="instructions-content">
+                                    <i class="fas fa-tasks"></i>
+                                    <h3>Ready to Test Your Knowledge?</h3>
+                                    <p>Generate a quiz from your notes, summaries, or enter a topic to get started.</p>
+                                    <ul>
+                                        <li>Questions are generated using AI based on your content</li>
+                                        <li>You can review answers and explanations after completing the quiz</li>
+                                        <li>Your scores are saved to track progress over time</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Quiz Progress -->
+                            <div class="quiz-progress" id="quizProgress" style="display: none;">
+                                <div class="progress-header">
+                                    <span id="progressText">Question 1 of 10</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="quizProgressFill"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Question Container -->
+                            <div class="question-container" id="questionContainer" style="display: none;">
+                                <div class="question-header">
+                                    <h3 id="questionText">What is the question?</h3>
+                                </div>
+                                <div class="options-container" id="optionsContainer">
+                                    <!-- Options will be dynamically added -->
+                                </div>
+                                <div class="question-actions">
+                                    <button class="btn secondary" id="prevQuestion" disabled>
+                                        <i class="fas fa-chevron-left"></i> Previous
+                                    </button>
+                                    <button class="btn primary" id="nextQuestion">
+                                        Next <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                    <button class="btn success" id="submitQuiz" style="display: none;">
+                                        <i class="fas fa-check"></i> Submit Quiz
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Results -->
+                            <div class="quiz-results" id="quizResults" style="display: none;">
+                                <div class="results-header">
+                                    <i class="fas fa-trophy"></i>
+                                    <h3>Quiz Completed!</h3>
+                                    <div class="score-display">
+                                        <span id="finalScore">0</span>
+                                        <small>/100</small>
+                                    </div>
+                                </div>
+                                <div class="results-chart">
+                                    <canvas id="resultsChart"></canvas>
+                                </div>
+                                <div class="results-details">
+                                    <div class="result-stat">
+                                        <span class="stat-value" id="correctAnswers">0</span>
+                                        <span class="stat-label">Correct</span>
+                                    </div>
+                                    <div class="result-stat">
+                                        <span class="stat-value" id="incorrectAnswers">0</span>
+                                        <span class="stat-label">Incorrect</span>
+                                    </div>
+                                    <div class="result-stat">
+                                        <span class="stat-value" id="timeTaken">0:00</span>
+                                        <span class="stat-label">Time</span>
+                                    </div>
+                                </div>
+                                <div class="results-actions">
+                                    <button class="btn secondary" id="reviewAnswers">
+                                        <i class="fas fa-search"></i> Review Answers
+                                    </button>
+                                    <button class="btn primary" id="newQuiz">
+                                        <i class="fas fa-plus"></i> New Quiz
+                                    </button>
+                                    <button class="btn success" id="saveResults">
+                                        <i class="fas fa-save"></i> Save Results
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Quiz History -->
+            <section class="history-section">
+                <div class="section-header animate-fade-up">
+                    <h2>Quiz History</h2>
+                    <a href="history.html" class="card-link">View All</a>
+                </div>
+
+                <div class="history-grid" id="historyGrid">
+                    <!-- Quiz history items will be dynamically added -->
+                    <div class="history-item animate-zoom-in">
+                        <div class="history-header">
+                            <h3>Biology - Cell Structure</h3>
+                            <span class="history-date">2 days ago</span>
+                        </div>
+                        <div class="history-stats">
+                            <div class="score-badge score-high">85%</div>
+                            <div class="history-details">
+                                <span>10 questions</span>
+                                <span>8 correct</span>
+                                <span>5:23 min</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="history-item animate-zoom-in">
+                        <div class="history-header">
+                            <h3>History - World War II</h3>
+                            <span class="history-date">1 week ago</span>
+                        </div>
+                        <div class="history-stats">
+                            <div class="score-badge score-medium">72%</div>
+                            <div class="history-details">
+                                <span>8 questions</span>
+                                <span>6 correct</span>
+                                <span>7:15 min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="empty-state" id="emptyHistory" style="display: none;">
+                    <i class="fas fa-tasks"></i>
+                    <h3>No Quiz History</h3>
+                    <p>Complete your first quiz to see your results here</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="auth.js"></script>
+    <script src="quiz.js"></script>
+</body>
+</html>

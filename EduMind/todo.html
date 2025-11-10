@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List - EduMind</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add these in the head section -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-brain"></i>
+                <span>EduMind</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="notes.html" class="nav-link">Notes</a>
+                <a href="summary.html" class="nav-link">AI Summary</a>
+                <a href="flashcards.html" class="nav-link">Flashcards</a>
+                <a href="quiz.html" class="nav-link">Quiz</a>
+                <a href="todo.html" class="nav-link active">To-Do</a>
+                <a href="timer.html" class="nav-link">Timer</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="whiteboard.html" class="nav-link">Whiteboard</a>
+                <div class="user-menu">
+                    <img src="https://ui-avatars.com/api/?name=Student+User&background=00bcd4&color=fff" alt="User" class="user-avatar">
+                    <div class="user-dropdown">
+                        <a href="profile.html" class="dropdown-item">Profile</a>
+                        <a href="settings.html" class="dropdown-item">Settings</a>
+                        <a href="index.html" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-toggle">
+                <input type="checkbox" id="theme-switch" class="theme-checkbox">
+                <label for="theme-switch" class="theme-label">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                    <div class="theme-ball"></div>
+                </label>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- To-Do Content -->
+    <main class="todo-page">
+        <div class="container">
+            <div class="page-header animate-fade-down">
+                <h1>Study Task Manager</h1>
+                <p>Organize your study schedule and track your progress</p>
+            </div>
+
+            <div class="todo-container">
+                <!-- Quick Stats -->
+                <section class="stats-section animate-fade-up">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Total Tasks</h3>
+                                <span class="stat-value" id="totalTasks">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Completed</h3>
+                                <span class="stat-value" id="completedTasks">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Pending</h3>
+                                <span class="stat-value" id="pendingTasks">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Due Today</h3>
+                                <span class="stat-value" id="dueToday">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Progress Section -->
+                <section class="progress-section animate-slide-left">
+                    <div class="progress-card">
+                        <div class="card-header">
+                            <h2>Overall Progress</h2>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="progress-bar-large">
+                                <div class="progress-fill" id="overallProgress"></div>
+                            </div>
+                            <div class="progress-details">
+                                <div class="progress-item">
+                                    <span class="progress-label">Completed</span>
+                                    <span class="progress-value" id="completedCount">0</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span class="progress-label">In Progress</span>
+                                    <span class="progress-value" id="inProgressCount">0</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span class="progress-label">Not Started</span>
+                                    <span class="progress-value" id="notStartedCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Add Task Section -->
+                <section class="add-task-section animate-slide-right">
+                    <div class="add-task-card">
+                        <div class="card-header">
+                            <h2>Add New Task</h2>
+                        </div>
+                        <div class="card-content">
+                            <form id="addTaskForm">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="taskTitle">Task Title</label>
+                                        <input type="text" id="taskTitle" placeholder="What do you need to study?" required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="taskSubject">Subject/Category</label>
+                                        <select id="taskSubject">
+                                            <option value="general">General</option>
+                                            <option value="math">Mathematics</option>
+                                            <option value="science">Science</option>
+                                            <option value="history">History</option>
+                                            <option value="language">Language</option>
+                                            <option value="programming">Programming</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="taskPriority">Priority</label>
+                                        <select id="taskPriority">
+                                            <option value="low">Low</option>
+                                            <option value="medium" selected>Medium</option>
+                                            <option value="high">High</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="taskDueDate">Due Date</label>
+                                        <input type="date" id="taskDueDate">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="taskEstimate">Time Estimate (hours)</label>
+                                        <input type="number" id="taskEstimate" min="0.5" max="24" step="0.5" value="1">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="taskDescription">Description (Optional)</label>
+                                    <textarea id="taskDescription" placeholder="Add details about this study task..." rows="3"></textarea>
+                                </div>
+                                <button type="submit" class="btn primary">
+                                    <i class="fas fa-plus"></i> Add Task
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tasks List -->
+                <section class="tasks-section">
+                    <div class="tasks-card animate-fade-up">
+                        <div class="card-header">
+                            <h2>Your Study Tasks</h2>
+                            <div class="filter-options">
+                                <select id="taskFilter">
+                                    <option value="all">All Tasks</option>
+                                    <option value="active">Active</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="today">Due Today</option>
+                                    <option value="week">Due This Week</option>
+                                </select>
+                                <button class="btn small secondary" id="clearCompleted">
+                                    <i class="fas fa-trash"></i> Clear Completed
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="tasks-list" id="tasksList">
+                                <!-- Tasks will be dynamically added here -->
+                            </div>
+                            <div class="empty-state" id="emptyTasks">
+                                <i class="fas fa-clipboard-list"></i>
+                                <h3>No Tasks Yet</h3>
+                                <p>Add your first study task to get started</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Upcoming Deadlines -->
+                <section class="deadlines-section animate-zoom-in">
+                    <div class="deadlines-card">
+                        <div class="card-header">
+                            <h2>Upcoming Deadlines</h2>
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="deadlines-list" id="deadlinesList">
+                                <!-- Upcoming deadlines will be dynamically added -->
+                            </div>
+                            <div class="empty-state" id="emptyDeadlines">
+                                <i class="fas fa-calendar-check"></i>
+                                <h3>No Upcoming Deadlines</h3>
+                                <p>Add tasks with due dates to see them here</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Task Modal -->
+    <div class="modal" id="editTaskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Task</h3>
+                <button class="close-btn" id="closeEditModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editTaskForm">
+                    <input type="hidden" id="editTaskId">
+                    <div class="form-group">
+                        <label for="editTaskTitle">Task Title</label>
+                        <input type="text" id="editTaskTitle" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editTaskSubject">Subject</label>
+                            <select id="editTaskSubject">
+                                <option value="general">General</option>
+                                <option value="math">Mathematics</option>
+                                <option value="science">Science</option>
+                                <option value="history">History</option>
+                                <option value="language">Language</option>
+                                <option value="programming">Programming</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editTaskPriority">Priority</label>
+                            <select id="editTaskPriority">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editTaskDueDate">Due Date</label>
+                            <input type="date" id="editTaskDueDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="editTaskEstimate">Time Estimate (hours)</label>
+                            <input type="number" id="editTaskEstimate" min="0.5" max="24" step="0.5">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTaskDescription">Description</label>
+                        <textarea id="editTaskDescription" rows="3"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn secondary" id="cancelEdit">Cancel</button>
+                        <button type="submit" class="btn primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="todo.js"></script>
+</body>
+</html>

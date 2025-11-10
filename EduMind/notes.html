@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes - EduMind</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-brain"></i>
+                <span>EduMind</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="notes.html" class="nav-link active">Notes</a>
+                <a href="summary.html" class="nav-link">AI Summary</a>
+                <a href="flashcards.html" class="nav-link">Flashcards</a>
+                <a href="quiz.html" class="nav-link">Quiz</a>
+                <a href="todo.html" class="nav-link">To-Do</a>
+                <a href="timer.html" class="nav-link">Timer</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="whiteboard.html" class="nav-link">Whiteboard</a>
+                <div class="user-menu">
+                    <img src="https://ui-avatars.com/api/?name=Student+User&background=00bcd4&color=fff" alt="User" class="user-avatar">
+                    <div class="user-dropdown">
+                        <a href="profile.html" class="dropdown-item">Profile</a>
+                        <a href="settings.html" class="dropdown-item">Settings</a>
+                        <a href="index.html" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-toggle">
+                <input type="checkbox" id="theme-switch" class="theme-checkbox">
+                <label for="theme-switch" class="theme-label">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                    <div class="theme-ball"></div>
+                </label>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Notes Content -->
+    <main class="notes-page">
+        <div class="container">
+            <div class="page-header animate-fade-down">
+                <h1>My Notes</h1>
+                <p>Upload and organize all your study materials in one place</p>
+            </div>
+
+            <!-- Upload Section -->
+            <section class="upload-section animate-fade-up">
+                <div class="upload-card">
+                    <div class="upload-header">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h2>Upload Notes</h2>
+                    </div>
+                    <div class="upload-options">
+                        <div class="upload-option active" data-type="file">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>Upload Files</span>
+                        </div>
+                        <div class="upload-option" data-type="url">
+                            <i class="fas fa-link"></i>
+                            <span>Add URL</span>
+                        </div>
+                        <div class="upload-option" data-type="text">
+                            <i class="fas fa-font"></i>
+                            <span>Write Text</span>
+                        </div>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="upload-content" id="file-upload">
+                        <div class="upload-area" id="dropZone">
+                            <i class="fas fa-file-upload"></i>
+                            <h3>Drag & Drop Files Here</h3>
+                            <p>Supported formats: PDF, JPG, PNG, DOCX</p>
+                            <span class="upload-or">or</span>
+                            <button class="btn primary" id="browseBtn">Browse Files</button>
+                            <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.docx" style="display: none;">
+                        </div>
+                        <div class="upload-progress" id="uploadProgress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <span id="progressText">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- URL Upload -->
+                    <div class="upload-content" id="url-upload" style="display: none;">
+                        <div class="url-form">
+                            <div class="form-group">
+                                <label for="urlTitle">Title</label>
+                                <input type="text" id="urlTitle" placeholder="Enter note title">
+                            </div>
+                            <div class="form-group">
+                                <label for="urlLink">URL</label>
+                                <input type="url" id="urlLink" placeholder="https://example.com">
+                            </div>
+                            <button class="btn primary" id="saveUrlBtn">Save URL</button>
+                        </div>
+                    </div>
+
+                    <!-- Text Upload -->
+                    <div class="upload-content" id="text-upload" style="display: none;">
+                        <div class="text-form">
+                            <div class="form-group">
+                                <label for="textTitle">Title</label>
+                                <input type="text" id="textTitle" placeholder="Enter note title">
+                            </div>
+                            <div class="form-group">
+                                <label for="noteText">Content</label>
+                                <textarea id="noteText" placeholder="Type or paste your notes here..." rows="8"></textarea>
+                            </div>
+                            <button class="btn primary" id="saveTextBtn">Save Note</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notes Grid -->
+            <section class="notes-grid-section">
+                <div class="section-header animate-slide-left">
+                    <h2>Recent Notes</h2>
+                    <div class="view-options">
+                        <button class="view-option active" data-view="grid">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button class="view-option" data-view="list">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="notes-grid animate-zoom-in" id="notesContainer">
+                    <!-- Notes will be dynamically added here -->
+                    <div class="note-card">
+                        <div class="note-header">
+                            <div class="note-type pdf">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="note-actions">
+                                <button class="action-btn" title="Preview">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="note-content">
+                            <h3>Biology Chapter 5 - Cell Structure</h3>
+                            <p>Uploaded: 2 days ago</p>
+                            <div class="note-tags">
+                                <span class="tag">Biology</span>
+                                <span class="tag">Science</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="note-card">
+                        <div class="note-header">
+                            <div class="note-type url">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            <div class="note-actions">
+                                <button class="action-btn" title="Preview">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="note-content">
+                            <h3>Khan Academy - Calculus</h3>
+                            <p>Added: 1 week ago</p>
+                            <div class="note-tags">
+                                <span class="tag">Math</span>
+                                <span class="tag">Calculus</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="note-card">
+                        <div class="note-header">
+                            <div class="note-type text">
+                                <i class="fas fa-font"></i>
+                            </div>
+                            <div class="note-actions">
+                                <button class="action-btn" title="Preview">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="note-content">
+                            <h3>History Notes - World War II</h3>
+                            <p>Created: 3 days ago</p>
+                            <div class="note-tags">
+                                <span class="tag">History</span>
+                                <span class="tag">WWII</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="note-card">
+                        <div class="note-header">
+                            <div class="note-type image">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            <div class="note-actions">
+                                <button class="action-btn" title="Preview">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="note-content">
+                            <h3>Chemistry Formulas</h3>
+                            <p>Uploaded: 5 days ago</p>
+                            <div class="note-tags">
+                                <span class="tag">Chemistry</span>
+                                <span class="tag">Formulas</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <i class="fas fa-file-upload"></i>
+                    <h3>No Notes Yet</h3>
+                    <p>Upload your first note to get started with AI-powered studying</p>
+                    <button class="btn primary" onclick="showUploadSection()">Upload Notes</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Preview Modal -->
+    <div class="modal" id="previewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="previewTitle">Note Preview</h3>
+                <button class="close-btn" id="closePreview">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="previewContent">
+                    <!-- Preview content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="notes.js"></script>
+</body>
+</html>

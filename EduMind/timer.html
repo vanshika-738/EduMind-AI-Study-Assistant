@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Timer - EduMind</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add these in the head section -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-brain"></i>
+                <span>EduMind</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="notes.html" class="nav-link">Notes</a>
+                <a href="summary.html" class="nav-link">AI Summary</a>
+                <a href="flashcards.html" class="nav-link">Flashcards</a>
+                <a href="quiz.html" class="nav-link">Quiz</a>
+                <a href="todo.html" class="nav-link">To-Do</a>
+                <a href="timer.html" class="nav-link active">Timer</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="whiteboard.html" class="nav-link">Whiteboard</a>
+                <div class="user-menu">
+                    <img src="https://ui-avatars.com/api/?name=Student+User&background=00bcd4&color=fff" alt="User" class="user-avatar">
+                    <div class="user-dropdown">
+                        <a href="profile.html" class="dropdown-item">Profile</a>
+                        <a href="settings.html" class="dropdown-item">Settings</a>
+                        <a href="index.html" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-toggle">
+                <input type="checkbox" id="theme-switch" class="theme-checkbox">
+                <label for="theme-switch" class="theme-label">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                    <div class="theme-ball"></div>
+                </label>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Timer Content -->
+    <main class="timer-page">
+        <div class="container">
+            <div class="page-header animate-fade-down">
+                <h1>Focus Timer</h1>
+                <p>Boost your productivity with the Pomodoro technique</p>
+            </div>
+
+            <div class="timer-container">
+                <!-- Timer Display -->
+                <section class="timer-display-section animate-zoom-in">
+                    <div class="timer-card">
+                        <div class="timer-circle">
+                            <svg class="progress-ring" width="300" height="300">
+                                <circle class="progress-ring-background" cx="150" cy="150" r="140" stroke-width="8"></circle>
+                                <circle class="progress-ring-circle" cx="150" cy="150" r="140" stroke-width="8" stroke-linecap="round"></circle>
+                            </svg>
+                            <div class="timer-content">
+                                <div class="timer-mode" id="timerMode">Focus</div>
+                                <div class="timer-display" id="timerDisplay">25:00</div>
+                                <div class="session-info" id="sessionInfo">Session 1 of 4</div>
+                            </div>
+                        </div>
+                        
+                        <div class="timer-controls">
+                            <button class="btn control-btn primary" id="startTimer">
+                                <i class="fas fa-play"></i> Start
+                            </button>
+                            <button class="btn control-btn secondary" id="pauseTimer" disabled>
+                                <i class="fas fa-pause"></i> Pause
+                            </button>
+                            <button class="btn control-btn danger" id="resetTimer">
+                                <i class="fas fa-redo"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Timer Settings -->
+                <section class="settings-section animate-slide-left">
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <h2>Timer Settings</h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="settings-grid">
+                                <div class="setting-group">
+                                    <label for="focusDuration">Focus Duration</label>
+                                    <div class="setting-control">
+                                        <input type="range" id="focusDuration" min="15" max="60" value="25" step="5">
+                                        <span id="focusDurationValue">25 minutes</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-group">
+                                    <label for="breakDuration">Break Duration</label>
+                                    <div class="setting-control">
+                                        <input type="range" id="breakDuration" min="5" max="30" value="5" step="5">
+                                        <span id="breakDurationValue">5 minutes</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-group">
+                                    <label for="longBreakDuration">Long Break Duration</label>
+                                    <div class="setting-control">
+                                        <input type="range" id="longBreakDuration" min="10" max="45" value="15" step="5">
+                                        <span id="longBreakDurationValue">15 minutes</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-group">
+                                    <label for="sessionsBeforeLongBreak">Sessions Before Long Break</label>
+                                    <div class="setting-control">
+                                        <input type="range" id="sessionsBeforeLongBreak" min="2" max="6" value="4" step="1">
+                                        <span id="sessionsValue">4 sessions</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="sound-settings">
+                                <h3>Sound Settings</h3>
+                                <div class="sound-options">
+                                    <div class="sound-option">
+                                        <input type="checkbox" id="enableSound" checked>
+                                        <label for="enableSound">Enable sound notifications</label>
+                                    </div>
+                                    <div class="sound-option">
+                                        <input type="checkbox" id="autoStartBreaks" checked>
+                                        <label for="autoStartBreaks">Auto-start breaks</label>
+                                    </div>
+                                    <div class="sound-option">
+                                        <input type="checkbox" id="autoStartFocus">
+                                        <label for="autoStartFocus">Auto-start focus sessions</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Current Session -->
+                <section class="session-section animate-slide-right">
+                    <div class="session-card">
+                        <div class="card-header">
+                            <h2>Current Session</h2>
+                            <div class="session-stats">
+                                <span id="currentTask">No task selected</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="task-selection">
+                                <h3>Select Study Task</h3>
+                                <select id="taskSelection">
+                                    <option value="">-- Select a task --</option>
+                                    <!-- Tasks will be dynamically populated -->
+                                </select>
+                                <button class="btn small primary" id="startWithTask">
+                                    <i class="fas fa-play"></i> Start with Task
+                                </button>
+                            </div>
+                            
+                            <div class="session-progress">
+                                <h3>Session Progress</h3>
+                                <div class="progress-bars">
+                                    <div class="progress-item">
+                                        <span class="progress-label">Today's Focus Time</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="todayProgress"></div>
+                                        </div>
+                                        <span class="progress-value" id="todayTime">0h 0m</span>
+                                    </div>
+                                    <div class="progress-item">
+                                        <span class="progress-label">Weekly Goal (10h)</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="weeklyProgress"></div>
+                                        </div>
+                                        <span class="progress-value" id="weeklyTime">0h 0m</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Session History -->
+                <section class="history-section animate-fade-up">
+                    <div class="history-card">
+                        <div class="card-header">
+                            <h2>Recent Sessions</h2>
+                            <button class="btn small secondary" id="clearHistory">
+                                <i class="fas fa-trash"></i> Clear History
+                            </button>
+                        </div>
+                        <div class="card-content">
+                            <div class="sessions-list" id="sessionsList">
+                                <!-- Session history will be dynamically added -->
+                            </div>
+                            <div class="empty-state" id="emptySessions">
+                                <i class="fas fa-history"></i>
+                                <h3>No Session History</h3>
+                                <p>Complete your first focus session to see it here</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Statistics -->
+                <section class="stats-section animate-zoom-in">
+                    <div class="stats-card">
+                        <div class="card-header">
+                            <h2>Focus Statistics</h2>
+                            <div class="period-selector">
+                                <select id="statsPeriod">
+                                    <option value="today">Today</option>
+                                    <option value="week" selected>This Week</option>
+                                    <option value="month">This Month</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3>Total Focus Time</h3>
+                                        <span class="stat-value" id="totalFocusTime">0h 0m</span>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3>Completed Sessions</h3>
+                                        <span class="stat-value" id="completedSessions">0</span>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-bolt"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3>Average Session</h3>
+                                        <span class="stat-value" id="averageSession">0m</span>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-trophy"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3>Current Streak</h3>
+                                        <span class="stat-value" id="currentStreak">0 days</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Timer Complete Modal -->
+    <div class="modal" id="timerCompleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="completeTitle">Session Complete!</h3>
+                <button class="close-btn" id="closeCompleteModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="complete-content">
+                    <i class="fas fa-check-circle" id="completeIcon"></i>
+                    <p id="completeMessage">Great job! You've completed a focus session.</p>
+                    <div class="session-summary" id="sessionSummary">
+                        <!-- Session summary will be added here -->
+                    </div>
+                    <div class="complete-actions">
+                        <button class="btn secondary" id="takeBreak">
+                            <i class="fas fa-coffee"></i> Start Break
+                        </button>
+                        <button class="btn primary" id="nextSession">
+                            <i class="fas fa-play"></i> Next Session
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio for notifications -->
+    <audio id="timerSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" preload="auto"></audio>
+
+    <script src="auth.js"></script>
+    <script src="timer.js"></script>
+</body>
+</html>

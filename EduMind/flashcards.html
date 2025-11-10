@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards - EduMind</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add these in the head section -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-brain"></i>
+                <span>EduMind</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="notes.html" class="nav-link">Notes</a>
+                <a href="summary.html" class="nav-link">AI Summary</a>
+                <a href="flashcards.html" class="nav-link active">Flashcards</a>
+                <a href="quiz.html" class="nav-link">Quiz</a>
+                <a href="todo.html" class="nav-link">To-Do</a>
+                <a href="timer.html" class="nav-link">Timer</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="whiteboard.html" class="nav-link">Whiteboard</a>
+                <div class="user-menu">
+                    <img src="https://ui-avatars.com/api/?name=Student+User&background=00bcd4&color=fff" alt="User" class="user-avatar">
+                    <div class="user-dropdown">
+                        <a href="profile.html" class="dropdown-item">Profile</a>
+                        <a href="settings.html" class="dropdown-item">Settings</a>
+                        <a href="index.html" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-toggle">
+                <input type="checkbox" id="theme-switch" class="theme-checkbox">
+                <label for="theme-switch" class="theme-label">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                    <div class="theme-ball"></div>
+                </label>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flashcards Content -->
+    <main class="flashcards-page">
+        <div class="container">
+            <div class="page-header animate-fade-down">
+                <h1>Smart Flashcards</h1>
+                <p>Create and study with interactive flashcards powered by AI</p>
+            </div>
+
+            <div class="flashcards-container">
+                <!-- Generator Section -->
+                <section class="generator-section animate-slide-left">
+                    <div class="generator-card">
+                        <div class="card-header">
+                            <h2>Generate Flashcards</h2>
+                            <div class="generator-options">
+                                <button class="option-btn active" data-option="ai">
+                                    <i class="fas fa-robot"></i> AI Generate
+                                </button>
+                                <button class="option-btn" data-option="manual">
+                                    <i class="fas fa-edit"></i> Manual Create
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-content">
+                            <!-- AI Generation -->
+                            <div class="generator-content active" id="ai-generate">
+                                <div class="ai-input">
+                                    <textarea id="flashcardText" placeholder="Paste your notes or summary here to generate flashcards automatically..."></textarea>
+                                    <div class="input-footer">
+                                        <div class="word-count">
+                                            <span id="fcWordCount">0</span> words
+                                        </div>
+                                        <button class="btn primary" id="generateFlashcards">
+                                            <i class="fas fa-magic"></i> Generate Flashcards
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="generation-settings">
+                                    <h4>Generation Settings</h4>
+                                    <div class="settings-grid">
+                                        <div class="setting">
+                                            <label for="cardCount">Number of Cards</label>
+                                            <input type="range" id="cardCount" min="5" max="20" value="10">
+                                            <span id="countValue">10</span>
+                                        </div>
+                                        <div class="setting">
+                                            <label for="difficulty">Difficulty</label>
+                                            <select id="difficulty">
+                                                <option value="easy">Easy</option>
+                                                <option value="medium" selected>Medium</option>
+                                                <option value="hard">Hard</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Manual Creation -->
+                            <div class="generator-content" id="manual-create">
+                                <div class="manual-input">
+                                    <div class="form-group">
+                                        <label for="cardQuestion">Question</label>
+                                        <input type="text" id="cardQuestion" placeholder="Enter question...">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cardAnswer">Answer</label>
+                                        <textarea id="cardAnswer" placeholder="Enter answer..." rows="4"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="cardCategory">Category</label>
+                                        <input type="text" id="cardCategory" placeholder="e.g., Biology, Math...">
+                                    </div>
+                                    <button class="btn primary" id="addCard">
+                                        <i class="fas fa-plus"></i> Add Card
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Flashcards Viewer -->
+                <section class="viewer-section animate-slide-right">
+                    <div class="viewer-card">
+                        <div class="card-header">
+                            <h2>Study Flashcards</h2>
+                            <div class="viewer-controls">
+                                <button class="control-btn" id="shuffleCards" title="Shuffle">
+                                    <i class="fas fa-random"></i>
+                                </button>
+                                <button class="control-btn" id="resetProgress" title="Reset Progress">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-content">
+                            <div class="flashcard-viewer">
+                                <div class="flashcard" id="currentCard">
+                                    <div class="card-inner">
+                                        <div class="card-front">
+                                            <div class="card-content-front">
+                                                <h3 id="cardFrontText">Click Generate to create flashcards</h3>
+                                                <div class="card-category" id="cardCategoryDisplay"></div>
+                                            </div>
+                                            <div class="card-hint">
+                                                <i class="fas fa-sync"></i>
+                                                <span>Click to flip</span>
+                                            </div>
+                                        </div>
+                                        <div class="card-back">
+                                            <div class="card-content-back">
+                                                <h3>Answer</h3>
+                                                <p id="cardBackText">The answer will appear here after generation</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="viewer-controls-full">
+                                    <button class="btn control-prev" id="prevCard" disabled>
+                                        <i class="fas fa-chevron-left"></i> Previous
+                                    </button>
+                                    
+                                    <div class="progress-info">
+                                        <span id="cardProgress">0/0</span>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="cardProgressFill"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <button class="btn control-next" id="nextCard">
+                                        Next <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+
+                                <div class="card-actions">
+                                    <button class="action-btn success" id="markKnown" title="I know this">
+                                        <i class="fas fa-check"></i> Know
+                                    </button>
+                                    <button class="action-btn warning" id="markReview" title="Need review">
+                                        <i class="fas fa-redo"></i> Review
+                                    </button>
+                                    <button class="action-btn danger" id="deleteCard" title="Delete card">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flashcards-stats">
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-layer-group"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3>Total Cards</h3>
+                                        <span class="stat-value" id="totalCards">0</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3>Mastered</h3>
+                                        <span class="stat-value" id="masteredCards">0</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h3>Study Time</h3>
+                                        <span class="stat-value" id="studyTime">0m</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Flashcard Sets -->
+            <section class="sets-section">
+                <div class="section-header animate-fade-up">
+                    <h2>Your Flashcard Sets</h2>
+                    <button class="btn primary" id="createNewSet">
+                        <i class="fas fa-plus"></i> New Set
+                    </button>
+                </div>
+
+                <div class="sets-grid" id="setsGrid">
+                    <!-- Flashcard sets will be dynamically added -->
+                    <div class="set-card animate-zoom-in">
+                        <div class="set-header">
+                            <h3>Biology - Cell Structure</h3>
+                            <span class="set-date">Created: 2 days ago</span>
+                        </div>
+                        <div class="set-stats">
+                            <div class="set-stat">
+                                <i class="fas fa-layer-group"></i>
+                                <span>15 cards</span>
+                            </div>
+                            <div class="set-stat">
+                                <i class="fas fa-check-circle"></i>
+                                <span>8 mastered</span>
+                            </div>
+                        </div>
+                        <div class="set-actions">
+                            <button class="btn small primary study-set">Study</button>
+                            <button class="btn small secondary edit-set">Edit</button>
+                        </div>
+                    </div>
+
+                    <div class="set-card animate-zoom-in">
+                        <div class="set-header">
+                            <h3>History - World War II</h3>
+                            <span class="set-date">Created: 1 week ago</span>
+                        </div>
+                        <div class="set-stats">
+                            <div class="set-stat">
+                                <i class="fas fa-layer-group"></i>
+                                <span>12 cards</span>
+                            </div>
+                            <div class="set-stat">
+                                <i class="fas fa-check-circle"></i>
+                                <span>5 mastered</span>
+                            </div>
+                        </div>
+                        <div class="set-actions">
+                            <button class="btn small primary study-set">Study</button>
+                            <button class="btn small secondary edit-set">Edit</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="empty-state" id="emptySets" style="display: none;">
+                    <i class="fas fa-layer-group"></i>
+                    <h3>No Flashcard Sets Yet</h3>
+                    <p>Create your first set to start studying with flashcards</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Create Set Modal -->
+    <div class="modal" id="createSetModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Flashcard Set</h3>
+                <button class="close-btn" id="closeSetModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="setName">Set Name</label>
+                    <input type="text" id="setName" placeholder="Enter set name...">
+                </div>
+                <div class="form-group">
+                    <label for="setDescription">Description</label>
+                    <textarea id="setDescription" placeholder="Enter description..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="setCategory">Category</label>
+                    <input type="text" id="setCategory" placeholder="e.g., Biology, History...">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn secondary" id="cancelSet">Cancel</button>
+                    <button class="btn primary" id="saveSet">Create Set</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="flashcards.js"></script>
+</body>
+</html>

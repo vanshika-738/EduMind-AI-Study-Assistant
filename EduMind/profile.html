@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - EduMind</title>
+    <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add these in the head section -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <style>
+        /* CSS Variables for Theme */
+        :root {
+            --primary: #00bcd4;
+            --accent: #9c27b0;
+            --background: linear-gradient(135deg, #e0f7fa, #fce4ec);
+            --text: #2c3e50;
+            --hover: #ff6f61;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --radius: 20px;
+        }
+
+        [data-theme="dark"] {
+            --primary: #00bcd4;
+            --accent: #9c27b0;
+            --background: linear-gradient(135deg, #1a1a2e, #16213e);
+            --text: #f5f5f5;
+            --hover: #ff6f61;
+            --card-bg: rgba(30, 30, 46, 0.9);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Delius', cursive;
+            color: var(--text);
+            background: var(--background);
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 15px 0;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .navbar {
+            background: rgba(30, 30, 46, 0.9);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .nav-logo i {
+            margin-right: 10px;
+            font-size: 2rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+        }
+
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            padding: 10px 0;
+            min-width: 150px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .user-menu:hover .user-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--primary);
+        }
+
+        [data-theme="dark"] .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .theme-toggle {
+            margin-left: 20px;
+        }
+
+        .theme-checkbox {
+            display: none;
+        }
+
+        .theme-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 60px;
+            height: 30px;
+            background: var(--text);
+            border-radius: 50px;
+            padding: 5px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .theme-label i {
+            font-size: 14px;
+            color: var(--card-bg);
+            z-index: 1;
+        }
+
+        .theme-ball {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: var(--card-bg);
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-checkbox:checked + .theme-label .theme-ball {
+            transform: translateX(30px);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .bar {
+            width: 25px;
+            height: 3px;
+            background: var(--text);
+            margin: 3px 0;
+            transition: 0.3s;
+        }
+
+        /* Profile Container */
+        .profile-container {
+            padding: 100px 0 50px;
+            min-height: 100vh;
+        }
+
+        /* Profile Header */
+        .profile-header {
+            margin-bottom: 40px;
+        }
+
+        .cover-photo-container {
+            position: relative;
+            margin-bottom: 80px;
+        }
+
+        .cover-photo {
+            height: 300px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #coverImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cover-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .cover-photo:hover .cover-overlay {
+            opacity: 1;
+        }
+
+        .cover-edit-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Delius', cursive;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .cover-edit-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .profile-picture-container {
+            position: absolute;
+            bottom: -60px;
+            left: 50px;
+        }
+
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid var(--card-bg);
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+
+        #profileImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .profile-picture:hover .profile-overlay {
+            opacity: 1;
+        }
+
+        .profile-edit-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .profile-edit-btn:hover {
+            background: var(--hover);
+            transform: scale(1.1);
+        }
+
+        /* User Info */
+        .user-info {
+            padding: 0 50px;
+            margin-top: 20px;
+        }
+
+        .user-name {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .user-bio {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        .user-stats {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .edit-profile-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-family: 'Delius', cursive;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .edit-profile-btn:hover {
+            background: var(--hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Profile Content */
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 0 50px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Profile Cards */
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .card-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .edit-section-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .edit-section-btn:hover {
+            background: rgba(0, 188, 212, 0.1);
+            transform: scale(1.1);
+        }
+
+        .card-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .card-link:hover {
+            color: var(--hover);
+        }
+
+        .card-content {
+            padding: 25px;
+        }
+
+        /* About Section */
+        .about-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] .about-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .about-item:last-child {
+            border-bottom: none;
+        }
+
+        .about-item i {
+            width: 20px;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .about-details {
+            flex: 1;
+        }
+
+        .about-label {
+            display: block;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .about-value {
+            font-weight: bold;
+        }
+
+        /* Goals Section */
+        .goal-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] .goal-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .goal-item:last-child {
+            border-bottom: none;
+        }
+
+        .goal-info h3 {
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .goal-info p {
+            opacity: 0.7;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .goal-progress {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        [data-theme="dark"] .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .goal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .goal-edit, .goal-delete {
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .goal-edit:hover {
+            background: rgba(0, 188, 212, 0.1);
+            color: var(--primary);
+        }
+
+        .goal-delete:hover {
+            background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+        }
+
+        .add-goal-btn {
+            width: 100%;
+            background: none;
+            border: 2px dashed var(--primary);
+            color: var(--primary);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Delius', cursive;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .add-goal-btn:hover {
+            background: rgba(0, 188, 212, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Stats Section */
+        .stat-chart {
+            height: 200px;
+            margin-bottom: 25px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .mini-stat {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .mini-stat {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mini-stat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .mini-stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mini-stat-icon i {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .mini-stat-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .mini-stat-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        /* Activity Timeline */
+        .activity-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] .timeline-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .timeline-marker {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .timeline-marker.completed {
+            background: #4caf50;
+        }
+
+        .timeline-marker.uploaded {
+            background: #2196f3;
+        }
+
+        .timeline-marker.generated {
+            background: #9c27b0;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-content p {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .timeline-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .timeline-score {
+            font-weight: bold;
+            color: #4caf50;
+        }
+
+        /* Badges Section */
+        .badges-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .badge-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .badge-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge-item.gold {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #8b6b00;
+        }
+
+        .badge-item.silver {
+            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+            color: #666;
+        }
+
+        .badge-item.bronze {
+            background: linear-gradient(135deg, #cd7f32, #e89c5e);
+            color: #5a3921;
+        }
+
+        .badge-item.locked {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text);
+            opacity: 0.5;
+        }
+
+        [data-theme="dark"] .badge-item.locked {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .badge-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .badge-item.locked .badge-icon {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .badge-item.locked .badge-icon {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .badge-icon i {
+            font-size: 1.5rem;
+        }
+
+        .badge-info h3 {
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+
+        .badge-info p {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-family: 'Delius', cursive;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .form-group input,
+        [data-theme="dark"] .form-group textarea {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-family: 'Delius', cursive;
+            font-size: 1rem;
+        }
+
+        .btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn.secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn.primary:hover {
+            background: var(--hover);
+        }
+
+        .btn.secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Upload Options */
+        .upload-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .upload-option {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            border: 2px dashed var(--primary);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-option:hover {
+            background: rgba(0, 188, 212, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .upload-option i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .upload-option span {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .image-preview {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .image-preview.active {
+            display: block;
+        }
+
+        #previewImage {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Animations */
+        .animate-slide-left {
+            animation: slideLeft 0.6s ease forwards;
+            opacity: 0;
+            transform: translateX(50px);
+        }
+
+        .animate-slide-right {
+            animation: slideRight 0.6s ease forwards;
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+
+        @keyframes slideLeft {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideRight {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .profile-left, .profile-right {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .nav-menu {
+                position: fixed;
+                top: 80px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 80px);
+                background: var(--card-bg);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                padding-top: 50px;
+                transition: left 0.3s ease;
+                gap: 30px;
+            }
+            
+            .nav-menu.active {
+                left: 0;
+            }
+            
+            .hamburger {
+                display: flex;
+            }
+            
+            .hamburger.active .bar:nth-child(2) {
+                opacity: 0;
+            }
+            
+            .hamburger.active .bar:nth-child(1) {
+                transform: translateY(8px) rotate(45deg);
+            }
+            
+            .hamburger.active .bar:nth-child(3) {
+                transform: translateY(-8px) rotate(-45deg);
+            }
+            
+            .user-stats {
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+            
+            .profile-picture-container {
+                left: 20px;
+                bottom: -50px;
+            }
+            
+            .profile-picture {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .user-info {
+                padding: 0 20px;
+            }
+            
+            .profile-content {
+                padding: 0 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .user-name {
+                font-size: 2rem;
+            }
+            
+            .user-bio {
+                font-size: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .badges-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cover-photo {
+                height: 200px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .profile-container {
+                padding: 80px 0 30px;
+            }
+            
+            .user-stats {
+                justify-content: center;
+            }
+            
+            .stat {
+                min-width: 80px;
+            }
+            
+            .profile-picture-container {
+                position: static;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            
+            .profile-picture {
+                margin: 0 auto;
+            }
+            
+            .user-info {
+                text-align: center;
+            }
+            
+            .cover-photo-container {
+                margin-bottom: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-brain"></i>
+                <span>EduMind</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="notes.html" class="nav-link">Notes</a>
+                <a href="summary.html" class="nav-link">AI Summary</a>
+                <a href="flashcards.html" class="nav-link">Flashcards</a>
+                <a href="quiz.html" class="nav-link">Quiz</a>
+                <a href="todo.html" class="nav-link">To-Do</a>
+                <a href="timer.html" class="nav-link">Timer</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="whiteboard.html" class="nav-link">Whiteboard</a>
+                <a href="profile.html" class="nav-link active">Profile</a>
+                <div class="user-menu">
+                    <img id="userAvatar" src="https://ui-avatars.com/api/?name=Student+User&background=00bcd4&color=fff" alt="User" class="user-avatar">
+                    <div class="user-dropdown">
+                        <a href="profile.html" class="dropdown-item">Profile</a>
+                        <a href="settings.html" class="dropdown-item">Settings</a>
+                        <a href="index.html" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="theme-toggle">
+                <input type="checkbox" id="theme-switch" class="theme-checkbox">
+                <label for="theme-switch" class="theme-label">
+                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-moon"></i>
+                    <div class="theme-ball"></div>
+                </label>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Content -->
+    <main class="profile-container">
+        <div class="profile-header">
+            <!-- Cover Photo -->
+            <div class="cover-photo-container">
+                <div class="cover-photo" id="coverPhoto">
+                    <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Cover" id="coverImage">
+                    <div class="cover-overlay">
+                        <button class="cover-edit-btn" id="coverEditBtn">
+                            <i class="fas fa-camera"></i>
+                            Change Cover
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Profile Picture -->
+                <div class="profile-picture-container">
+                    <div class="profile-picture" id="profilePicture">
+                        <img src="https://ui-avatars.com/api/?name=Student+User&background=00bcd4&color=fff&size=200" alt="Profile" id="profileImage">
+                        <div class="profile-overlay">
+                            <button class="profile-edit-btn" id="profileEditBtn">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Info -->
+            <div class="user-info">
+                <h1 class="user-name" id="userName">Student User</h1>
+                <p class="user-bio" id="userBio">Passionate learner | Computer Science Student | AI Enthusiast</p>
+                <div class="user-stats">
+                    <div class="stat">
+                        <span class="stat-number">24</span>
+                        <span class="stat-label">Study Sessions</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">87%</span>
+                        <span class="stat-label">Avg. Score</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">18</span>
+                        <span class="stat-label">Tasks Done</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">12h</span>
+                        <span class="stat-label">Focus Time</span>
+                    </div>
+                </div>
+                <button class="edit-profile-btn" id="editProfileBtn">
+                    <i class="fas fa-edit"></i>
+                    Edit Profile
+                </button>
+            </div>
+        </div>
+
+        <div class="profile-content">
+            <!-- Left Column -->
+            <div class="profile-left">
+                <!-- About Section -->
+                <div class="profile-card about-card animate-slide-left">
+                    <div class="card-header">
+                        <h2>About Me</h2>
+                        <button class="edit-section-btn" data-section="about">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        <div class="about-item">
+                            <i class="fas fa-graduation-cap"></i>
+                            <div class="about-details">
+                                <span class="about-label">Education</span>
+                                <span class="about-value" id="educationValue">Computer Science Student at University</span>
+                            </div>
+                        </div>
+                        <div class="about-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div class="about-details">
+                                <span class="about-label">Location</span>
+                                <span class="about-value" id="locationValue">New York, USA</span>
+                            </div>
+                        </div>
+                        <div class="about-item">
+                            <i class="fas fa-calendar"></i>
+                            <div class="about-details">
+                                <span class="about-label">Joined</span>
+                                <span class="about-value" id="joinedValue">January 2023</span>
+                            </div>
+                        </div>
+                        <div class="about-item">
+                            <i class="fas fa-heart"></i>
+                            <div class="about-details">
+                                <span class="about-label">Interests</span>
+                                <span class="about-value" id="interestsValue">AI, Machine Learning, Web Development, Data Science</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Study Goals -->
+                <div class="profile-card goals-card animate-slide-left">
+                    <div class="card-header">
+                        <h2>Study Goals</h2>
+                        <button class="edit-section-btn" data-section="goals">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        <div class="goal-item">
+                            <div class="goal-info">
+                                <h3>Complete AI Course</h3>
+                                <p>Finish all modules and assignments</p>
+                                <div class="goal-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 65%"></div>
+                                    </div>
+                                    <span>65%</span>
+                                </div>
+                            </div>
+                            <div class="goal-actions">
+                                <button class="goal-edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="goal-delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="goal-item">
+                            <div class="goal-info">
+                                <h3>Master JavaScript</h3>
+                                <p>Complete advanced JS concepts</p>
+                                <div class="goal-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 40%"></div>
+                                    </div>
+                                    <span>40%</span>
+                                </div>
+                            </div>
+                            <div class="goal-actions">
+                                <button class="goal-edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="goal-delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button class="add-goal-btn">
+                            <i class="fas fa-plus"></i>
+                            Add New Goal
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="profile-right">
+                <!-- Activity Stats -->
+                <div class="profile-card stats-card animate-slide-right">
+                    <div class="card-header">
+                        <h2>Study Statistics</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="stat-chart">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="mini-stat">
+                                <div class="mini-stat-icon">
+                                    <i class="fas fa-fire"></i>
+                                </div>
+                                <div class="mini-stat-info">
+                                    <span class="mini-stat-value">7</span>
+                                    <span class="mini-stat-label">Day Streak</span>
+                                </div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-stat-icon">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <div class="mini-stat-info">
+                                    <span class="mini-stat-value">15</span>
+                                    <span class="mini-stat-label">Achievements</span>
+                                </div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-stat-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="mini-stat-info">
+                                    <span class="mini-stat-value">12.5h</span>
+                                    <span class="mini-stat-label">This Week</span>
+                                </div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-stat-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="mini-stat-info">
+                                    <span class="mini-stat-value">87%</span>
+                                    <span class="mini-stat-label">Avg. Score</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="profile-card activity-card animate-slide-right">
+                    <div class="card-header">
+                        <h2>Recent Activity</h2>
+                        <a href="history.html" class="card-link">View All</a>
+                    </div>
+                    <div class="card-content">
+                        <div class="activity-timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-marker completed"></div>
+                                <div class="timeline-content">
+                                    <p>Completed "Machine Learning Basics" quiz</p>
+                                    <span class="timeline-time">2 hours ago</span>
+                                </div>
+                                <div class="timeline-score">92%</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker uploaded"></div>
+                                <div class="timeline-content">
+                                    <p>Uploaded "Data Structures Notes"</p>
+                                    <span class="timeline-time">5 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker generated"></div>
+                                <div class="timeline-content">
+                                    <p>Generated flashcards from AI summary</p>
+                                    <span class="timeline-time">Yesterday</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-marker completed"></div>
+                                <div class="timeline-content">
+                                    <p>Finished 4 Pomodoro sessions</p>
+                                    <span class="timeline-time">2 days ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Badges -->
+                <div class="profile-card badges-card animate-slide-right">
+                    <div class="card-header">
+                        <h2>Badges & Achievements</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="badges-grid">
+                            <div class="badge-item gold">
+                                <div class="badge-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="badge-info">
+                                    <h3>Quick Learner</h3>
+                                    <p>Complete 10 study sessions</p>
+                                </div>
+                            </div>
+                            <div class="badge-item silver">
+                                <div class="badge-icon">
+                                    <i class="fas fa-fire"></i>
+                                </div>
+                                <div class="badge-info">
+                                    <h3>Streak Master</h3>
+                                    <p>7-day study streak</p>
+                                </div>
+                            </div>
+                            <div class="badge-item bronze">
+                                <div class="badge-icon">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <div class="badge-info">
+                                    <h3>Quiz Whiz</h3>
+                                    <p>Score 90%+ on 5 quizzes</p>
+                                </div>
+                            </div>
+                            <div class="badge-item locked">
+                                <div class="badge-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <div class="badge-info">
+                                    <h3>Marathon Runner</h3>
+                                    <p>Complete 50 study sessions</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Profile</h2>
+                <button class="modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="editName">Full Name</label>
+                        <input type="text" id="editName" placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="editBio">Bio</label>
+                        <textarea id="editBio" placeholder="Tell us about yourself" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editEducation">Education</label>
+                        <input type="text" id="editEducation" placeholder="Your education">
+                    </div>
+                    <div class="form-group">
+                        <label for="editLocation">Location</label>
+                        <input type="text" id="editLocation" placeholder="Your location">
+                    </div>
+                    <div class="form-group">
+                        <label for="editInterests">Interests</label>
+                        <input type="text" id="editInterests" placeholder="Your interests (comma separated)">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn secondary" id="cancelEdit">Cancel</button>
+                        <button type="submit" class="btn primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Upload Modal -->
+    <div class="modal" id="imageUploadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="imageModalTitle">Change Profile Picture</h2>
+                <button class="modal-close" id="imageModalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-options">
+                    <div class="upload-option" id="uploadFromDevice">
+                        <i class="fas fa-upload"></i>
+                        <span>Upload from Device</span>
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    </div>
+                    <div class="upload-option" id="takePhoto">
+                        <i class="fas fa-camera"></i>
+                        <span>Take Photo</span>
+                    </div>
+                    <div class="upload-option" id="removePhoto">
+                        <i class="fas fa-trash"></i>
+                        <span>Remove Current</span>
+                    </div>
+                </div>
+                <div class="image-preview" id="imagePreview">
+                    <img id="previewImage" src="" alt="Preview">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn secondary" id="cancelUpload">Cancel</button>
+                    <button type="button" class="btn primary" id="saveImage" disabled>Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="auth.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html>
