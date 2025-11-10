@@ -1,0 +1,33 @@
+name: Notify PR Merged
+
+on:
+  pull_request:
+    types: [closed]  # Trigger when a PR is closed
+
+jobs:
+  notify_merged:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true  # Only run if PR was merged
+
+    steps:
+      - name: Notify contributor
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const prAuthor = context.payload.pull_request.user.login;
+
+            const message = `
+Hi @${prAuthor} 👏
+
+Your Pull Request #${prNumber} has been **merged** successfully! 🎉  
+Thank you for your contribution to **EduMind AI Study Assistant**. 🚀
+`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: message
+            });
