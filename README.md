@@ -66,8 +66,6 @@ It brings together smart tools like **Notes**, **To-Do List**, **Timer**, and **
 ## 💡 Future Enhancements
 
 - 🤖 **Add AI Chat Assistant** – for instant study help and query resolution  
-- 🌙 **Introduce Dark Mode** – to enhance usability and reduce eye strain  
-- 📤 **Export/Import Notes & To-Do Lists** – for easy data backup and sharing  
 - 💬 **Enable Group Study Rooms** – with real-time collaborative whiteboards
 
 - Go to your Cloudinary Dashboard
