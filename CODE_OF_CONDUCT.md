@@ -88,4 +88,3 @@ Maintainers will make decisions based on **fairness and safety for the community
 This Code of Conduct is adapted from the [Contributor Covenant v2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/), a widely adopted standard in open source communities.
 
 ---
-
