@@ -7,11 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 </head>
 <body class="auth-page">
     <div class="auth-container">
@@ -140,38 +135,40 @@
         </div>
     </div>
 
-    <script>
-        // Theme Toggle Functionality - Load from localStorage
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check for saved theme or preferred color scheme
-            const currentTheme = localStorage.getItem('theme');
-            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-            
-            if (currentTheme === 'dark' || (!currentTheme && prefersDarkScheme.matches)) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            } else {
-                document.documentElement.setAttribute('data-theme', 'light');
+    <script type="module">
+    import {
+        auth,
+        db,
+        googleProvider,
+        githubProvider,
+        signInWithPopup,
+        createUserWithEmailAndPassword,
+        showNotification,
+        initializeTheme,
+        doc,
+        getDoc,
+        setDoc,
+        serverTimestamp,
+        onAuthStateChanged,
+        googleSignIn,
+        githubSignIn
+    } from './auth.js';
+
+    // Initialize theme first
+    initializeTheme();
+
+    // Check authentication state and redirect if already logged in
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log('User already logged in:', user.email);
+            if (window.location.pathname.includes('signup.html')) {
+                window.location.href = 'dashboard.html';
             }
-        });
+        }
+    });
 
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "",
-            authDomain: "edumind-ai-assistant-6e071.firebaseapp.com",
-            projectId: "edumind-ai-assistant-6e071",
-            storageBucket: "edumind-ai-assistant-6e071.firebasestorage.app",
-            messagingSenderId: "307173146203",
-            appId: "1:307173146203:web:1456f23755bc5d2a11497e",
-            measurementId: "G-T16NPJFS4P"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        // Signup form functionality
-        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+    // Signup form functionality
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const firstName = document.getElementById('firstName').value.trim();
@@ -207,14 +204,15 @@
             
             try {
                 // Create user with email and password
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-                
-                // Update user profile with name
-                await user.updateProfile({
-                    displayName: `${firstName} ${lastName}`,
-                    photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName + ' ' + lastName)}&background=00bcd4&color=fff`
-                });
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            
+            // Update user profile with name
+            const { updateProfile } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js');
+            await updateProfile(user, {
+                displayName: `${firstName} ${lastName}`,
+                photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName + ' ' + lastName)}&background=00bcd4&color=fff`
+            });
                 
                 // Create user document in Firestore
                 await createUserDocument(user, firstName, lastName);
@@ -254,29 +252,21 @@
         // Google Signup functionality
         document.querySelector('.google-auth-btn').addEventListener('click', async function() {
             try {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                
-                // Add scopes
-                provider.addScope('profile');
-                provider.addScope('email');
-                
                 // Show loading state
                 const originalText = this.innerHTML;
                 this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
                 this.disabled = true;
                 
-                const result = await auth.signInWithPopup(provider);
-                const user = result.user;
+                const { user, isNew } = await googleSignIn();
                 
-                // Check if this is a new user
-                const userDoc = await db.collection('users').doc(user.uid).get();
+                // Reset button state
+                this.innerHTML = originalText;
+                this.disabled = false;
                 
-                if (!userDoc.exists) {
-                    // Create user document for new Google sign-up
-                    await createUserDocument(user, user.displayName?.split(' ')[0] || 'User', user.displayName?.split(' ')[1] || '');
+                if (isNew) {
                     showNotification('Account created successfully with Google!', 'success');
                 } else {
-                    showNotification('Signed in successfully!', 'success');
+                    showNotification('Welcome back! Redirecting...', 'success');
                 }
                 
                 // Redirect to dashboard
@@ -309,9 +299,59 @@
             }
         });
         
-        // GitHub Signup (placeholder)
-        document.querySelector('.social-btn.github').addEventListener('click', function() {
-            showNotification('GitHub authentication coming soon!', 'info');
+        // GitHub Signup functionality
+        document.querySelector('.social-btn.github').addEventListener('click', async function() {
+            try {
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+                this.disabled = true;
+                
+                console.log('Starting GitHub sign-up...');
+                
+                const { user, isNew } = await githubSignIn();
+                
+                console.log('GitHub sign-up successful:', user.email);
+                
+                // Reset button state
+                this.innerHTML = originalText;
+                this.disabled = false;
+                
+                if (isNew) {
+                    showNotification('Account created successfully with GitHub!', 'success');
+                } else {
+                    showNotification('Welcome back! Redirecting...', 'success');
+                }
+                
+                // Redirect to dashboard
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+                
+            } catch (error) {
+                console.error('GitHub signup error:', error);
+                
+                // Reset button state
+                this.innerHTML = '<i class="fab fa-github"></i> GitHub';
+                this.disabled = false;
+                
+                let errorMessage = 'Failed to sign up with GitHub. Please try again.';
+                
+                switch (error.code) {
+                    case 'auth/popup-closed-by-user':
+                        errorMessage = 'Sign-up was cancelled.';
+                        break;
+                    case 'auth/popup-blocked':
+                        errorMessage = 'Sign-up popup was blocked. Please allow popups for this site.';
+                        break;
+                    case 'auth/account-exists-with-different-credential':
+                        errorMessage = 'An account already exists with the same email address but different sign-in credentials.';
+                        break;
+                    default:
+                        errorMessage = error.message || errorMessage;
+                }
+                
+                showNotification(errorMessage, 'error');
+            }
         });
         
         // Password strength indicator
@@ -378,21 +418,22 @@
 
         async function createUserDocument(user, firstName, lastName) {
             try {
-                const userRef = db.collection('users').doc(user.uid);
+                const userRef = doc(db, 'users', user.uid);
                 
-                await userRef.set({
+                await setDoc(userRef, {
                     name: user.displayName || `${firstName} ${lastName}`,
                     email: user.email,
                     profilePhoto: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName + ' ' + lastName)}&background=00bcd4&color=fff`,
                     firstName: firstName,
                     lastName: lastName,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdAt: serverTimestamp(),
+                    lastLogin: serverTimestamp(),
                     authProvider: user.providerData[0]?.providerId || 'email'
                 });
                 
                 // Create user progress document
-                await db.collection('user_progress').doc(user.uid).set({
+                const progressRef = doc(db, 'user_progress', user.uid);
+                await setDoc(progressRef, {
                     userId: user.uid,
                     totalSessions: 0,
                     totalStudyTime: 0,
@@ -400,7 +441,7 @@
                     completedTasks: 0,
                     currentStreak: 0,
                     longestStreak: 0,
-                    lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastActive: serverTimestamp(),
                     level: 1,
                     experience: 0,
                     achievements: []
@@ -414,135 +455,7 @@
             }
         }
 
-        function showNotification(message, type = 'info') {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.innerHTML = `
-                <div class="notification-content">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-                    <span>${message}</span>
-                </div>
-                <button class="notification-close">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            // Add styles if not already present
-            if (!document.querySelector('.notification-styles')) {
-                const style = document.createElement('style');
-                style.className = 'notification-styles';
-                style.textContent = `
-                    .notification {
-                        position: fixed;
-                        top: 100px;
-                        right: 20px;
-                        background: var(--card-bg);
-                        border-radius: 10px;
-                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-                        padding: 15px 20px;
-                        display: flex;
-                        align-items: center;
-                        gap: 15px;
-                        z-index: 1000;
-                        max-width: 400px;
-                        transform: translateX(150%);
-                        transition: transform 0.3s ease;
-                        border-left: 4px solid;
-                    }
-                    
-                    .notification-success {
-                        border-left-color: #4caf50;
-                    }
-                    
-                    .notification-error {
-                        border-left-color: #f44336;
-                    }
-                    
-                    .notification-warning {
-                        border-left-color: #ff9800;
-                    }
-                    
-                    .notification-info {
-                        border-left-color: var(--primary);
-                    }
-                    
-                    .notification.show {
-                        transform: translateX(0);
-                    }
-                    
-                    .notification-content {
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                        flex: 1;
-                    }
-                    
-                    .notification-content i {
-                        font-size: 1.2rem;
-                    }
-                    
-                    .notification-success .notification-content i {
-                        color: #4caf50;
-                    }
-                    
-                    .notification-error .notification-content i {
-                        color: #f44336;
-                    }
-                    
-                    .notification-warning .notification-content i {
-                        color: #ff9800;
-                    }
-                    
-                    .notification-info .notification-content i {
-                        color: var(--primary);
-                    }
-                    
-                    .notification-close {
-                        background: none;
-                        border: none;
-                        color: var(--text);
-                        cursor: pointer;
-                        opacity: 0.7;
-                        transition: all 0.3s ease;
-                    }
-                    
-                    .notification-close:hover {
-                        opacity: 1;
-                        transform: scale(1.1);
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-            
-            document.body.appendChild(notification);
-            
-            // Show notification
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 10);
-            
-            // Auto hide after 5 seconds
-            const autoHide = setTimeout(() => {
-                hideNotification(notification);
-            }, 5000);
-            
-            // Close button functionality
-            const closeBtn = notification.querySelector('.notification-close');
-            closeBtn.addEventListener('click', () => {
-                clearTimeout(autoHide);
-                hideNotification(notification);
-            });
-            
-            function hideNotification(notif) {
-                notif.classList.remove('show');
-                setTimeout(() => {
-                    if (notif.parentNode) {
-                        notif.parentNode.removeChild(notif);
-                    }
-                }, 300);
-            }
-        }
+        console.log('Signup page loaded successfully');
     </script>
 </body>
 

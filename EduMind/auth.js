@@ -1,23 +1,28 @@
 // auth.js - Complete Firebase Authentication with Proper Logout
+import {
+    app,
+    auth,
+    db,
+    googleProvider,
+    githubProvider,
+    signInWithPopup,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    doc,
+    collection,
+    getDoc,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    query,
+    where,
+    orderBy,
+    serverTimestamp
+} from './firebase-config.js';
 
-// Firebase Configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyBCyRrvdQJBpPjZG3aGaTZfMXXoISzNsTg",
-    authDomain: "edumind-ai-assistant-6e071.firebaseapp.com",
-    projectId: "edumind-ai-assistant-6e071",
-    storageBucket: "edumind-ai-assistant-6e071.firebasestorage.app",
-    messagingSenderId: "307173146203",
-    appId: "1:307173146203:web:1456f23755bc5d2a11497e",
-    measurementId: "G-T16NPJFS4P"
-};
-
-// Initialize Firebase
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-
-const auth = firebase.auth();
-const db = firebase.firestore();
+console.log('Auth.js loaded with Firebase app:', app.name);
 
 // Theme Management
 function initializeTheme() {
@@ -49,7 +54,7 @@ function initializeTheme() {
 
 // Authentication State Management
 function initializeAuth() {
-    auth.onAuthStateChanged((user) => {
+    onAuthStateChanged(auth, (user) => {
         console.log('Auth state changed:', user ? 'User logged in' : 'User logged out');
         
         if (user) {
@@ -73,29 +78,32 @@ function initializeAuth() {
 }
 
 // Initialize user data in Firestore
-function initializeUserData(user) {
-    const userRef = db.collection('users').doc(user.uid);
-    
-    userRef.get().then((doc) => {
-        if (!doc.exists) {
+async function initializeUserData(user) {
+    try {
+        const userRef = doc(db, 'users', user.uid);
+        const { getDoc, setDoc } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+        
+        const userDoc = await getDoc(userRef);
+        
+        if (!userDoc.exists()) {
             // Create user document if it doesn't exist
-            userRef.set({
+            await setDoc(userRef, {
                 name: user.displayName || user.email.split('@')[0],
                 email: user.email,
                 profilePhoto: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.email.split('@')[0])}&background=00bcd4&color=fff`,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                createdAt: serverTimestamp(),
+                lastLogin: serverTimestamp(),
                 authProvider: user.providerData[0]?.providerId || 'email'
             });
         } else {
             // Update last login
-            userRef.update({
-                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            await updateDoc(userRef, {
+                lastLogin: serverTimestamp()
             });
         }
-    }).catch((error) => {
+    } catch (error) {
         console.error('Error initializing user data:', error);
-    });
+    }
 }
 
 // Update UI for logged in user
@@ -152,7 +160,7 @@ function logout() {
     if (confirm('Are you sure you want to logout?')) {
         console.log('Starting logout process...');
         
-        auth.signOut().then(() => {
+        signOut(auth).then(() => {
             console.log('Firebase signOut successful');
             
             // Clear localStorage
@@ -172,6 +180,90 @@ function logout() {
             showNotification('Logout failed. Please try again.', 'error');
         });
     }
+}
+
+// Google Sign-In Function
+async function googleSignIn() {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    const userRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userRef);
+    const isNew = !userDoc.exists();
+    
+    if (isNew) {
+        await setDoc(userRef, {
+            name: user.displayName,
+            email: user.email,
+            profilePhoto: user.photoURL,
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp(),
+            authProvider: 'google'
+        });
+        
+        // Create user progress document
+        const progressRef = doc(db, 'user_progress', user.uid);
+        await setDoc(progressRef, {
+            userId: user.uid,
+            totalSessions: 0,
+            totalStudyTime: 0,
+            avgQuizScore: 0,
+            completedTasks: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+            lastActive: serverTimestamp(),
+            level: 1,
+            experience: 0,
+            achievements: []
+        });
+    } else {
+        await updateDoc(userRef, {
+            lastLogin: serverTimestamp()
+        });
+    }
+    
+    return { user, isNew };
+}
+
+// GitHub Sign-In Function
+async function githubSignIn() {
+    const result = await signInWithPopup(auth, githubProvider);
+    const user = result.user;
+    const userRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userRef);
+    const isNew = !userDoc.exists();
+    
+    if (isNew) {
+        await setDoc(userRef, {
+            name: user.displayName || user.email.split('@')[0],
+            email: user.email,
+            profilePhoto: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email.split('@')[0])}&background=00bcd4&color=fff`,
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp(),
+            authProvider: 'github'
+        });
+        
+        // Create user progress document
+        const progressRef = doc(db, 'user_progress', user.uid);
+        await setDoc(progressRef, {
+            userId: user.uid,
+            totalSessions: 0,
+            totalStudyTime: 0,
+            avgQuizScore: 0,
+            completedTasks: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+            lastActive: serverTimestamp(),
+            level: 1,
+            experience: 0,
+            achievements: []
+        });
+    } else {
+        await updateDoc(userRef, {
+            lastLogin: serverTimestamp()
+        });
+    }
+    
+    return { user, isNew };
 }
 
 // Mobile Menu Toggle
@@ -355,11 +447,34 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Auth system initialized successfully');
 });
 
-// Make logout function globally available
+// Make functions globally available
 window.logout = logout;
 window.firebaseAuth = {
     auth,
     db,
     logout,
     showNotification
+};
+
+// Export for module usage
+export {
+    auth,
+    db,
+    googleProvider,
+    githubProvider,
+    signInWithPopup,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
+    serverTimestamp,
+    logout,
+    googleSignIn,
+    githubSignIn,
+    showNotification,
+    initializeTheme
 };

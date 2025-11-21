@@ -1,17 +1,22 @@
 // firebase-config.js - ACTUAL CONFIGURATION
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
-import { 
-    getAuth, 
-    GoogleAuthProvider, 
-    signInWithPopup, 
+import {
+    getAuth,
+    GoogleAuthProvider,
+    GitHubAuthProvider,
+    signInWithPopup,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
     signOut,
-    onAuthStateChanged 
+    onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
-import { 
+import {
     getFirestore,
     collection,
     addDoc,
     getDocs,
+    getDoc,
+    setDoc,
     updateDoc,
     deleteDoc,
     doc,
@@ -23,17 +28,18 @@ import {
 
 // 🔥 YAHAN APNA ACTUAL CONFIGURATION DALEN 🔥
 const firebaseConfig = {
-  apiKey: "AIzaSyBCyRrvdQJBpPjZG3aGaTZfMXXoISzNsTg",
-  authDomain: "edumind-ai-assistant-6e071.firebaseapp.com",
-  projectId: "edumind-ai-assistant-6e071",
-  storageBucket: "edumind-ai-assistant-6e071.firebasestorage.app",
-  messagingSenderId: "307173146203",
-  appId: "1:307173146203:web:1456f23755bc5d2a11497e",
-  measurementId: "G-T16NPJFS4P"
+    apiKey: "AIzaSyCy9UmN4nCyZWc4IkZhzWHcVYRv_jJBhuY",
+    authDomain: "edumind-ai-study-assistant.firebaseapp.com",
+    projectId: "edumind-ai-study-assistant",
+    storageBucket: "edumind-ai-study-assistant.firebasestorage.app",
+    messagingSenderId: "930096074568",
+    appId: "1:930096074568:web:16dd85ebdc404e0dfa2d7d",
+    measurementId: "G-FWTRKD7SJN"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+console.log('Firebase initialized successfully');
 
 // Initialize Firebase Authentication and get a reference to the service
 const auth = getAuth(app);
@@ -44,16 +50,25 @@ const db = getFirestore(app);
 // Google Auth Provider
 const googleProvider = new GoogleAuthProvider();
 
-export { 
-    auth, 
-    googleProvider, 
-    signInWithPopup, 
-    signOut, 
+// GitHub Auth Provider
+const githubProvider = new GitHubAuthProvider();
+
+export {
+    app,
+    auth,
+    googleProvider,
+    githubProvider,
+    signInWithPopup,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut,
     onAuthStateChanged,
     db,
     collection,
     addDoc,
     getDocs,
+    getDoc,
+    setDoc,
     updateDoc,
     deleteDoc,
     doc,
