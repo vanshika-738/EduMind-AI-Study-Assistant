@@ -1,3 +1,23 @@
+## 📑 Table of Contents
+
+- [🎓 EduMind – AI Study Assistant](#-edumind--ai-study-assistant)
+- [✨ Key Features](#✨-key-features)
+- [🧩 Tech Stack](#🧩-tech-stack)
+- [🛠️ Installation and Setup Guide](#🛠️-installation-and-setup-guide)
+  - [Prerequisites](#prerequisites)
+  - [Step 1: Clone the Repository](#step-1-clone-the-repository)
+  - [Step 2: Required Files](#step-2-required-files)
+  - [Step 3: Install Dependencies](#step-3-install-dependencies)
+  - [Step 4: Firebase Configuration](#step-4-firebase-configuration)
+  - [Step 5: Cloudinary Setup (Optional)](#step-5-cloudinary-setup-optional)
+  - [Step 6: Run the App Locally](#step-6-run-the-app-locally)
+  - [Common Errors and Solutions](#common-errors-and-solutions)
+- [💡 Future Enhancements](#💡-future-enhancements)
+- [🧑‍💻 Author](#🧑‍💻-author)
+- [🌟 Star & Fork EduMind](#🌟-star--fork-edumind-🌟)
+- [🤝 Contributing](#🤝-contributing)
+- [📄 License](#📄-license)
+
 # 🎓 EduMind – AI Study Assistant
 
 **EduMind – AI Study Assistant** is a **web-based platform** built to help students organize, manage, and enhance their learning experience.  
